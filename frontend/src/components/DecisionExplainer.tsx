@@ -50,7 +50,7 @@ export const DecisionExplainer: React.FC<DecisionExplainerProps> = ({
               EXPLAINABLE AI REASONING &bull; ROOT CAUSE BREAKDOWN
             </span>
           </div>
-          <h2 className="text-xl font-serif-heading font-medium text-[#0F172A] mt-1">
+          <h2 className="text-xl font-bold text-[#0F172A] mt-1">
             Why ReviveAI Recommended {payment.ai_recommendation || 'DELAYED_RETRY'}
           </h2>
           <p className="text-xs text-[#64748B] mt-1">

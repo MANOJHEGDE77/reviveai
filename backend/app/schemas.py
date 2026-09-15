@@ -182,11 +182,21 @@ class DashboardSummaryOut(BaseModel):
     revenue_trend: List[RevenueChartPoint]
     live_operations: List[LiveAiOperation]
 
-# --- Simulation Schemas ---
+# --- Simulation & Incident Ingestion Schemas ---
 class SimulateEventRequest(BaseModel):
     customer_name: Optional[str] = "Swiggy Merchant Partner"
+    customer_email: Optional[str] = None
+    customer_phone: Optional[str] = None
+    customer_ltv: Optional[float] = None
+    customer_successful_txns: Optional[int] = None
     amount: float = Field(..., gt=0.0)
-    failure_category: str = Field(..., description="TEMPORARY_DECLINE, CHECKOUT_ABANDONED, SUBSCRIPTION_DECLINE, OVERDUE_INVOICE, REPEAT_DECLINE, NETWORK_TIMEOUT")
+    failure_category: Optional[str] = Field("TEMPORARY_DECLINE", description="TEMPORARY_DECLINE, CHECKOUT_ABANDONED, SUBSCRIPTION_DECLINE, OVERDUE_INVOICE, REPEAT_DECLINE, NETWORK_TIMEOUT")
+    failure_code: Optional[str] = None
     failure_reason: Optional[str] = None
     payment_method_type: Optional[str] = "CARD"
+    payment_method_masked: Optional[str] = None
     auto_execute: bool = True
+
+class CreateIncidentRequest(SimulateEventRequest):
+    pass
+

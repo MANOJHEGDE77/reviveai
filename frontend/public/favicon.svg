@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <!-- Background Gradient: Deep Obsidian & Carbon -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F19" />
+      <stop offset="50%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Border Glow Gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.6" />
+      <stop offset="40%" stop-color="#818CF8" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.5" />
+    </linearGradient>
+
+    <!-- Primary Ribbon Gradient (Electric Indigo to Vivid Cyan) -->
+    <linearGradient id="ribbonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="35%" stop-color="#3B82F6" />
+      <stop offset="70%" stop-color="#06B6D4" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+
+    <!-- Dynamic Recovery Arrow Gradient (Cyan to Emerald Prosperity) -->
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="40%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+
+    <!-- Core Ambient Pulse Glow -->
+    <radialGradient id="ambientGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.35" />
+      <stop offset="60%" stop-color="#3B82F6" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Drop Shadow Filter for Glyph Depth -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#06B6D4" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Container Squircle with Precision Border -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="1.75" />
+
+  <!-- Ambient Central Radiance -->
+  <circle cx="32" cy="32" r="22" fill="url(#ambientGlow)" />
+
+  <!-- Geometric Subtle Grid Nodes -->
+  <circle cx="16" cy="16" r="1" fill="#38BDF8" opacity="0.3" />
+  <circle cx="48" cy="16" r="1" fill="#38BDF8" opacity="0.3" />
+  <circle cx="16" cy="48" r="1" fill="#38BDF8" opacity="0.3" />
+  <circle cx="48" cy="48" r="1" fill="#10B981" opacity="0.3" />
+
+  <!-- Iconic Kinetic 'R' & Recovery Loop -->
+  <g filter="url(#neonGlow)">
+    <!-- 1. Vertical Bedrock Pillar (Anchor of Trust) -->
+    <path
+      d="M 17 46 L 17 19 C 17 17.343 18.343 16 20 16 L 22.5 16 C 23.881 16 25 17.119 25 18.5 L 25 43.5 C 25 44.881 23.881 46 22.5 46 Z"
+      fill="url(#ribbonGrad)"
+    />
+
+    <!-- 2. The Autonomous Möbius Loop (Circular Re-routing Arc) -->
+    <path
+      d="M 23 16 L 33 16 C 39.075 16 43.5 20.425 43.5 26.5 C 43.5 32.575 39.075 36 33 36 L 24 36 C 22.895 36 22 35.105 22 34 L 22 31 C 22 29.895 22.895 29 24 29 L 32.5 29 C 35.261 29 37 27.657 37 25.5 C 37 23.343 35.261 22 32.5 22 L 23 22 Z"
+      fill="url(#ribbonGrad)"
+    />
+
+    <!-- 3. Dynamic Recovery Vector / Upward Velocity Arrow (Revenue Ascending) -->
+    <path
+      d="M 29.5 32.5 L 41.5 44.8 C 42.4 45.7 43.9 45.4 44.4 44.2 L 47 38 L 41 38.5 L 34 31 Z"
+      fill="url(#arrowGrad)"
+    />
+
+    <!-- 4. Spark Telemetry Diamond (AI Decision Spark) -->
+    <polygon
+      points="45,14 47.5,18 51.5,20.5 47.5,23 45,27 42.5,23 38.5,20.5 42.5,18"
+      fill="#38BDF8"
+      opacity="0.9"
+    />
+    <circle cx="45" cy="20.5" r="1.5" fill="#FFFFFF" />
+  </g>
+</svg>

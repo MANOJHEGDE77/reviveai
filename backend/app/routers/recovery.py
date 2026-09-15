@@ -9,6 +9,7 @@ from app.recovery_engine import RevenueRecoveryEngine
 router = APIRouter(prefix="/recovery", tags=["Recovery"])
 
 @router.get("", response_model=List[RecoveryWorkflowOut])
+@router.get("/workflows", response_model=List[RecoveryWorkflowOut])
 def list_recovery_workflows(
     status: Optional[str] = Query(None, description="ACTIVE, WAITING, PENDING_APPROVAL, RESOLVED, EXPIRED"),
     db: Session = Depends(get_db)

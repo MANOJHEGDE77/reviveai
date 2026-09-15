@@ -6,11 +6,20 @@ import {
   RecoveryAction,
   ApprovalRequest,
   AuditLog,
-  DemoScenarioResult
+  DemoScenarioResult,
+  CustomIncidentInput
 } from '../types';
 
+const getBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim().length > 0) {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -99,15 +108,14 @@ export const apiClient = {
     return res.data;
   },
 
+  // Incidents
+  createIncident: async (data: CustomIncidentInput): Promise<Payment> => {
+    const res = await api.post<Payment>('/incidents', data);
+    return res.data;
+  },
+
   // Simulation
-  triggerSimulation: async (data: {
-    customer_name?: string;
-    amount: number;
-    failure_category: string;
-    failure_reason?: string;
-    payment_method_type?: string;
-    auto_execute?: boolean;
-  }): Promise<Payment> => {
+  triggerSimulation: async (data: CustomIncidentInput): Promise<Payment> => {
     const res = await api.post<Payment>('/simulation/trigger', data);
     return res.data;
   },

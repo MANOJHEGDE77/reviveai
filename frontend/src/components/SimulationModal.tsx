@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { apiClient, formatINR } from '../api/client';
 import { Payment } from '../types';
+import { SimulateFailureIcon } from './ActionIcons';
 
 interface SimulationModalProps {
   isOpen: boolean;
@@ -68,16 +69,21 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="pb-3 border-b border-[#EAE6DD]">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FFFBEB] px-2 py-0.5 rounded border border-[#FDE68A]">
-            SIMULATION LAB &bull; INJECT PAYLOAD
-          </span>
-          <h2 className="text-lg font-serif-heading font-medium text-[#0F172A] mt-1.5">
-            Simulate Payment Failure Event
-          </h2>
-          <p className="text-xs text-[#64748B] mt-0.5">
-            Injects a synthetic payment decline webhook into the live ReviveAI closed-loop pipeline.
-          </p>
+        <div className="pb-3 border-b border-[#EAE6DD] flex items-start gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#FFFBEB] to-[#FEF3C7] border border-[#FDE68A] shadow-fintech-xs shrink-0">
+            <SimulateFailureIcon className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FFFBEB] px-2 py-0.5 rounded border border-[#FDE68A]">
+              SIMULATION LAB &bull; INJECT PAYLOAD
+            </span>
+            <h2 className="text-lg font-bold text-[#0F172A] mt-1">
+              Simulate Payment Failure Event
+            </h2>
+            <p className="text-xs text-[#64748B] mt-0.5">
+              Injects a synthetic payment decline webhook into the live ReviveAI closed-loop pipeline.
+            </p>
+          </div>
         </div>
 
         {/* Quick Presets */}
@@ -172,9 +178,9 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-50 transition shadow-fintech-sm flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-50 transition shadow-fintech-sm flex items-center gap-2 group"
             >
-              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 text-[#F59E0B] fill-current" />}
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SimulateFailureIcon className="w-3.5 h-3.5" />}
               <span>Simulate Incident</span>
             </button>
           </div>

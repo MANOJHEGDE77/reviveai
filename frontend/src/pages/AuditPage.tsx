@@ -61,11 +61,11 @@ export const AuditPage: React.FC = () => {
               05 &bull; IMMUTABLE AUDIT TRAIL
             </span>
             <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-serif-heading italic text-[#475569]">
+            <span className="text-xs font-mono font-medium text-[#475569]">
               Compliance Ledger
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif-heading font-normal text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
             Compliance Audit Ledger
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">

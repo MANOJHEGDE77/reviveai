@@ -20,26 +20,46 @@ async def trigger_simulated_payment_event(
     Simulates an incoming payment failure event into ReviveAI.
     Automatically enters the agent loop: Detect -> Understand -> Decide -> Act.
     """
-    # 1. Fetch or create simulated customer
-    customer = db.query(Customer).filter(Customer.name.ilike(f"%{body.customer_name}%")).first()
+    # 1. Fetch or create customer using real user-supplied fields if provided
+    customer = None
+    if body.customer_email:
+        customer = db.query(Customer).filter(Customer.email == body.customer_email.strip()).first()
+    if not customer and body.customer_name:
+        customer = db.query(Customer).filter(Customer.name.ilike(f"%{body.customer_name.strip()}%")).first()
+
     if not customer:
         customer_ref = f"CUS_{random.randint(10000, 99999)}"
+        email = body.customer_email or f"{body.customer_name.lower().replace(' ', '')}@merchant.in" if body.customer_name else "finance@merchantcorp.in"
+        phone = body.customer_phone or "+91 98980 11223"
+        masked = body.payment_method_masked or ("•••• " + str(random.randint(1000, 9999)))
+        ltv = body.customer_ltv if (body.customer_ltv is not None and body.customer_ltv > 0) else (body.amount * 4)
+        success_txns = body.customer_successful_txns if (body.customer_successful_txns is not None and body.customer_successful_txns >= 0) else random.randint(3, 15)
+
         customer = Customer(
             customer_ref=customer_ref,
             name=body.customer_name or "BharatPay Merchant Enterprise",
-            email="finance@merchantcorp.in",
-            phone="+91 98980 11223",
-            payment_method_masked="•••• " + str(random.randint(1000, 9999)),
+            email=email,
+            phone=phone,
+            payment_method_masked=masked,
             payment_method_type=body.payment_method_type or "CARD",
-            lifetime_value=body.amount * 4,
-            successful_transactions=random.randint(3, 15),
+            lifetime_value=ltv,
+            successful_transactions=success_txns,
             failed_transactions=1,
             health_score=88
         )
         db.add(customer)
         db.flush()
+    else:
+        # Update existing customer with any new user inputs if supplied
+        if body.customer_ltv is not None and body.customer_ltv > 0:
+            customer.lifetime_value = body.customer_ltv
+        if body.customer_successful_txns is not None:
+            customer.successful_transactions = body.customer_successful_txns
+        if body.payment_method_type:
+            customer.payment_method_type = body.payment_method_type
+        db.flush()
 
-    # 2. Create failed payment record
+    # 2. Create failed payment record with custom user data
     payment_ref = f"PAY_{random.randint(10000, 99999)}"
     risk_level = "CRITICAL" if body.amount >= 100000 else ("HIGH" if body.amount >= 50000 else "MEDIUM")
 
@@ -53,6 +73,7 @@ async def trigger_simulated_payment_event(
     }
 
     reason = body.failure_reason or failure_reasons_map.get(body.failure_category, "Payment gateway decline")
+    code = body.failure_code or ("GATEWAY_SIM_" + body.failure_category)
 
     payment = Payment(
         payment_ref=payment_ref,
@@ -61,7 +82,7 @@ async def trigger_simulated_payment_event(
         currency="INR",
         status="FAILED",
         failure_category=body.failure_category,
-        failure_code="GATEWAY_SIM_" + body.failure_category,
+        failure_code=code,
         failure_reason=reason,
         risk_level=risk_level,
         recovery_probability=0.82
@@ -112,7 +133,7 @@ def resolve_simulated_payment_success(
 @router.post("/demo-scenario")
 async def run_guided_demo_scenario(db: Session = Depends(get_db)) -> Dict[str, Any]:
     """
-    Executes the entire 10-step demo scenario defined in the buildathon specification:
+    Executes the entire 10-step demo scenario defined in the enterprise platform specification:
     1. ₹24,900 payment fails
     2. ReviveAI detects failure
     3. AI investigates customer history & failure pattern

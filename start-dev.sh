@@ -24,7 +24,9 @@ PYTHON_CMD=$(command -v python3 || command -v python)
 echo "[1/2] Starting Backend (FastAPI) on http://127.0.0.1:8000 ..."
 (
     cd backend
-    if [ -d ".venv" ]; then
+    if [ -d "../.venv" ]; then
+        source ../.venv/bin/activate
+    elif [ -d ".venv" ]; then
         source .venv/bin/activate
     fi
     $PYTHON_CMD -m uvicorn app.main:app --port 8000 --host 127.0.0.1 --reload

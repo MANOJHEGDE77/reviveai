@@ -17,13 +17,17 @@ import {
   Activity
 } from 'lucide-react';
 import { SimulationModal } from './SimulationModal';
+import { CustomIncidentModal } from './CustomIncidentModal';
 import { Toast, ToastProps } from './Toast';
+import { BrandLogo } from './BrandLogo';
+import { SimulateFailureIcon, InjectIncidentIcon } from './ActionIcons';
 import { apiClient } from '../api/client';
 
 export const Layout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [simModalOpen, setSimModalOpen] = useState(false);
+  const [customModalOpen, setCustomModalOpen] = useState(false);
   const [toast, setToast] = useState<ToastProps | null>(null);
   const [resetting, setResetting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -76,19 +80,8 @@ export const Layout: React.FC = () => {
       <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E5E1D8] px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand & Primary 5 Items */}
         <div className="flex items-center gap-6 lg:gap-8">
-          <NavLink to="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-[#0F172A] text-white flex items-center justify-center font-mono font-black text-sm shadow-fintech-xs group-hover:bg-[#1E293B] transition">
-              R
-            </div>
-            <div className="flex flex-col">
-              <span className="font-mono text-sm font-extrabold tracking-tight text-[#0F172A] leading-none">
-                REVIVEAI
-              </span>
-              <span className="text-[9px] font-mono text-[#059669] tracking-wide mt-0.5 flex items-center gap-1 font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                AUTONOMOUS V2.0
-              </span>
-            </div>
+          <NavLink to="/" className="shrink-0 transition hover:opacity-90">
+            <BrandLogo size="sm" subtitleText="AUTONOMOUS V2.0" />
           </NavLink>
 
           {/* 5 Primary Navigation Items */}
@@ -131,8 +124,17 @@ export const Layout: React.FC = () => {
           </span>
         </form>
 
-        {/* Right: Secondary Tools, Config & Simulation */}
+        {/* Right: Secondary Tools, Ingest Action & Simulation */}
         <div className="flex items-center gap-2.5">
+          {/* Quick Real Incident Ingestion Button */}
+          <button
+            onClick={() => setCustomModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-xs transition group"
+          >
+            <InjectIncidentIcon className="w-3.5 h-3.5" />
+            <span>+ Ingest Incident</span>
+          </button>
+
           {/* Tools: Simulation Lab */}
           <NavLink
             to="/simulation"
@@ -207,9 +209,9 @@ export const Layout: React.FC = () => {
 
           <button
             onClick={() => setSimModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-sm transition active:scale-95 shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-sm transition active:scale-95 shrink-0 group"
           >
-            <Zap className="w-3.5 h-3.5 text-[#F59E0B] fill-current" />
+            <SimulateFailureIcon className="w-3.5 h-3.5" />
             <span>Simulate Failure</span>
           </button>
 
@@ -263,14 +265,28 @@ export const Layout: React.FC = () => {
       {/* Footer */}
       <footer className="border-t border-[#E5E1D8] bg-[#FAF8F5] py-6 px-6 text-center text-xs text-[#64748B] font-mono">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="font-serif-heading italic text-sm text-[#475569]">
+          <span className="font-medium text-sm text-[#475569]">
             "Every failed payment creates a decision. ReviveAI makes that decision before the revenue disappears."
           </span>
           <span className="text-[11px] text-[#94A3B8]">
-            Razorpay AI Buildathon &bull; Track 3: AI Revenue Recovery
+            ReviveAI Sovereign Financial Intelligence &bull; Production Platform
           </span>
         </div>
       </footer>
+
+      {/* Custom Real Incident Ingestion Modal */}
+      <CustomIncidentModal
+        isOpen={customModalOpen}
+        onClose={() => setCustomModalOpen(false)}
+        onSuccess={(payment) => {
+          setToast({
+            type: 'success',
+            message: `Custom Incident Ingested: ${payment.payment_ref}`,
+            subMessage: `AI evaluated ${payment.customer?.name || 'Customer'} (₹${payment.amount.toLocaleString('en-IN')}) -> ${payment.ai_recommendation || 'DELAYED_RETRY'}`,
+          });
+          navigate(`/investigations/${payment.id}`);
+        }}
+      />
 
       {/* Simulation Modal */}
       <SimulationModal

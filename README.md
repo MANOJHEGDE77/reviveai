@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./frontend/public/logo.svg" width="88" height="88" alt="ReviveAI Logo" />
+
 # ⚡ ReviveAI — Autonomous AI Revenue Recovery Platform
 
 [![CI Pipeline](https://github.com/reviveai/reviveai/actions/workflows/ci.yml/badge.svg)](https://github.com/reviveai/reviveai/actions)
@@ -113,6 +115,7 @@ reviveai/
 │   ├── tests/
 │   │   ├── test_engine.py      # Automated unit tests for guardrails & state transitions
 │   │   └── test_api_endpoints.py # End-to-end API integration tests
+│   ├── test_qa_suite.py        # 9-Stage production QA audit test suite
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
@@ -217,16 +220,15 @@ docker-compose up --build
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/dashboard/metrics` | `GET` | Retrieve aggregate financial KPIs and recovery health |
-| `/api/dashboard/chart` | `GET` | Retrieve 7D / 30D / 90D time-series recovery data |
+| `/api/dashboard/summary` | `GET` | Retrieve aggregate financial KPIs, recovery rate, and 7-day trajectory |
+| `/api/incidents` | `POST` | Ingest custom payment failure with real customer data & evaluate guardrails |
 | `/api/incidents` | `GET` | List payment failure incidents with filters |
 | `/api/incidents/{id}` | `GET` | Get forensic detail, error codes, and audit events |
 | `/api/incidents/{id}/explain` | `POST` | Generate explainable AI decision reasoning breakdown |
-| `/api/recovery/workflows` | `GET` | List active, completed, and pending recovery workflows |
-| `/api/recovery/trigger` | `POST` | Trigger recovery for an incident |
 | `/api/approvals` | `GET` | List pending high-value approval requests |
-| `/api/approvals/{id}/decide` | `POST` | Approve or reject a high-value recovery workflow |
-| `/api/simulation/run-scenario` | `POST` | Execute end-to-end simulated failure & recovery scenario |
+| `/api/approvals/{id}/decision` | `POST` | Approve or reject a high-value recovery workflow |
+| `/api/simulation/trigger` | `POST` | Ingest custom scenario event and execute autonomous loop |
+| `/api/simulation/demo-scenario` | `POST` | Execute end-to-end simulated failure & recovery scenario |
 | `/api/audit` | `GET` | Access cryptographic-grade immutable audit ledger |
 
 ---
@@ -234,22 +236,27 @@ docker-compose up --build
 ## 🧪 Automated Testing
 
 ```bash
-cd backend
-python -m pytest tests/ -v
+# Run all 24 unit & integration tests from project root
+pytest -v
+
+# Run the standalone production QA audit test suite
+python backend/test_qa_suite.py
 ```
 
 Automated tests verify:
+- Real custom user input ingestion with custom customer identity, amounts, and LTV.
 - Guardrail rejection when retry limits are exceeded ($\le 2$).
 - High-value transaction escalation into approval requests ($\ge ₹50,000$).
 - State machine auto-termination upon payment success.
-- AI structured schema parsing and safe fallbacks.
-- REST API endpoint response codes and validation.
+- AI structured schema parsing and safe deterministic fallbacks.
+- End-to-end 9-stage revenue recovery lifecycle simulation.
 
 ---
 
 ## 📚 Documentation & Community
 
 - [Architecture & Deep Design](ARCHITECTURE.md)
+- [Cloud & Vercel Deployment Guide](DEPLOYMENT.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)

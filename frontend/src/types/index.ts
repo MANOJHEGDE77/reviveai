@@ -158,3 +158,19 @@ export interface DemoScenarioResult {
   ai_confidence: number;
   steps_completed: string[];
 }
+
+export interface CustomIncidentInput {
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  customer_ltv?: number;
+  customer_successful_txns?: number;
+  amount: number;
+  failure_category: string;
+  failure_code?: string;
+  failure_reason?: string;
+  payment_method_type?: string;
+  payment_method_masked?: string;
+  auto_execute?: boolean;
+}
+

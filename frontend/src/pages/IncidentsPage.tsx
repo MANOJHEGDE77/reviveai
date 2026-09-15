@@ -15,10 +15,13 @@ import {
   X,
   CreditCard,
   Building,
-  Smartphone
+  Smartphone,
+  Sparkles
 } from 'lucide-react';
 import { apiClient, formatINR, formatDateTime } from '../api/client';
 import { Payment } from '../types';
+import { CustomIncidentModal } from '../components/CustomIncidentModal';
+import { InjectIncidentIcon } from '../components/ActionIcons';
 
 export const IncidentsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,6 +31,7 @@ export const IncidentsPage: React.FC = () => {
   const [filterTab, setFilterTab] = useState<string>(searchParams.get('tab') || 'ALL');
   const [searchTerm, setSearchTerm] = useState<string>(searchParams.get('search') || '');
   const [investigatingId, setInvestigatingId] = useState<number | null>(null);
+  const [customModalOpen, setCustomModalOpen] = useState(false);
 
   const fetchIncidents = async () => {
     try {
@@ -122,11 +126,11 @@ export const IncidentsPage: React.FC = () => {
               02 &bull; FORENSIC INVESTIGATIONS
             </span>
             <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-serif-heading italic text-[#475569]">
+            <span className="text-xs font-mono font-medium text-[#475569]">
               Incident Triage
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif-heading font-normal text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
             Revenue Investigations
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">
@@ -134,13 +138,23 @@ export const IncidentsPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={fetchIncidents}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#475569] hover:text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs self-start sm:self-auto"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#059669]' : ''}`} />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => setCustomModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-xs transition group"
+          >
+            <InjectIncidentIcon className="w-3.5 h-3.5" />
+            <span>+ Ingest Incident</span>
+          </button>
+
+          <button
+            onClick={fetchIncidents}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#475569] hover:text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#059669]' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Search & Segmented Filter Tabs */}
@@ -276,6 +290,16 @@ export const IncidentsPage: React.FC = () => {
           })}
         </div>
       )}
+
+      {/* Custom Incident Ingestion Modal */}
+      <CustomIncidentModal
+        isOpen={customModalOpen}
+        onClose={() => setCustomModalOpen(false)}
+        onSuccess={(payment) => {
+          fetchIncidents();
+          navigate(`/investigations/${payment.id}`);
+        }}
+      />
     </div>
   );
 };

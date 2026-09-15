@@ -35,7 +35,7 @@ export const SettingsPage: React.FC = () => {
               CONFIGURATION &bull; REVENUE CONTROLS
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif-heading font-normal text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
             System Configuration
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">

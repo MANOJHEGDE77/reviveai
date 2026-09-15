@@ -29,16 +29,19 @@ import {
 } from 'recharts';
 import { apiClient, formatINR, formatDateTime } from '../api/client';
 import { DashboardSummary } from '../types';
+import { CustomIncidentModal } from '../components/CustomIncidentModal';
+import { InjectIncidentIcon } from '../components/ActionIcons';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [chartView, setChartView] = useState<'7D' | '30D' | '90D'>('7D');
-  const [dismissOnboarding, setDismissOnboarding] = useState(
-    () => localStorage.getItem('reviveai_dismiss_onboarding') === 'true'
-  );
+  const [timeRange, setTimeRange] = useState<'7D' | '30D' | '90D'>('7D');
+  const [dismissOnboarding, setDismissOnboarding] = useState(() => {
+    return localStorage.getItem('reviveai_onboarding_dismissed') === 'true';
+  });
+  const [customModalOpen, setCustomModalOpen] = useState(false);
 
   const fetchSummary = async (showRefresh = false) => {
     try {
@@ -106,7 +109,7 @@ export const DashboardPage: React.FC = () => {
               <Sparkles className="w-3 h-3 text-[#D97706]" />
               WELCOME TO REVIVEAI COMMAND CENTER
             </span>
-            <h2 className="text-base font-serif-heading font-medium text-[#0F172A] mt-0.5">
+            <h2 className="text-base font-bold text-[#0F172A] mt-0.5">
               Autonomous AI Revenue Recovery Engine
             </h2>
             <p className="text-xs text-[#64748B] mt-0.5 max-w-2xl font-sans leading-relaxed">
@@ -157,11 +160,11 @@ export const DashboardPage: React.FC = () => {
               01 &bull; COMMAND CENTER
             </span>
             <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-serif-heading italic text-[#475569]">
+            <span className="text-xs font-mono font-medium text-[#475569]">
               Live Revenue Operations
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif-heading font-normal text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
             Today's Revenue Journey
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">
@@ -172,6 +175,14 @@ export const DashboardPage: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
+            onClick={() => setCustomModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-xs transition group"
+          >
+            <InjectIncidentIcon className="w-3.5 h-3.5" />
+            <span>+ Ingest Incident</span>
+          </button>
+
+          <button
             onClick={() => fetchSummary(true)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#475569] hover:text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs"
           >
@@ -181,9 +192,9 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => navigate('/investigations')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] transition shadow-fintech-sm"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono font-medium text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs"
           >
-            <span>Review At-Risk Revenue</span>
+            <span>Review At-Risk</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -276,9 +287,9 @@ export const DashboardPage: React.FC = () => {
             {(['7D', '30D', '90D'] as const).map((period) => (
               <button
                 key={period}
-                onClick={() => setChartView(period)}
+                onClick={() => setTimeRange(period)}
                 className={`px-3 py-1 rounded-md transition ${
-                  chartView === period
+                  timeRange === period
                     ? 'bg-[#0F172A] text-white font-bold'
                     : 'bg-[#FAF8F5] text-[#64748B] hover:text-[#0F172A] border border-[#DDD8CC]'
                 }`}
@@ -555,6 +566,16 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Custom Real Incident Ingestion Modal */}
+      <CustomIncidentModal
+        isOpen={customModalOpen}
+        onClose={() => setCustomModalOpen(false)}
+        onSuccess={(payment) => {
+          fetchSummary();
+          navigate(`/investigations/${payment.id}`);
+        }}
+      />
     </div>
   );
 };

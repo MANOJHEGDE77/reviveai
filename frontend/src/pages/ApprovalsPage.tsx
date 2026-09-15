@@ -65,11 +65,11 @@ export const ApprovalsPage: React.FC = () => {
               04 &bull; HUMAN GOVERNANCE QUEUE
             </span>
             <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-serif-heading italic text-[#475569]">
+            <span className="text-xs font-mono font-medium text-[#475569]">
               Approvals
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif-heading font-normal text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
             Human Approvals
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">

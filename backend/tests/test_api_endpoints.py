@@ -23,15 +23,15 @@ def override_get_db():
     finally:
         db.close()
 
-app.dependency_overrides[get_db] = override_get_db
-
 @pytest.fixture(scope="function", autouse=True)
 def setup_test_db():
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     seed_demo_data(db)
     db.close()
+    app.dependency_overrides[get_db] = override_get_db
     yield
+    app.dependency_overrides.pop(get_db, None)
     Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture
@@ -180,3 +180,25 @@ def test_simulation_reset(client):
     reset_res = client.post("/api/simulation/reset")
     assert reset_res.status_code == 200
     assert "reset and seeded" in reset_res.json()["message"]
+
+def test_create_custom_incident(client):
+    res = client.post("/api/incidents", json={
+        "customer_name": "Acme Global Enterprise",
+        "customer_email": "ops@acmeglobal.in",
+        "customer_phone": "+91 91234 56789",
+        "customer_ltv": 150000.0,
+        "customer_successful_txns": 12,
+        "amount": 32000.0,
+        "failure_category": "TEMPORARY_DECLINE",
+        "failure_reason": "Card network switch throttled during batch processing",
+        "payment_method_type": "CARD",
+        "auto_execute": True
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["customer"]["name"] == "Acme Global Enterprise"
+    assert data["customer"]["email"] == "ops@acmeglobal.in"
+    assert data["amount"] == 32000.0
+    assert data["status"] == "IN_RECOVERY"
+    assert data["workflow"] is not None
+

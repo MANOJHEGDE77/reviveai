@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { apiClient, formatINR } from '../api/client';
 import { DemoScenarioResult, Payment } from '../types';
+import { SimulateFailureIcon } from '../components/ActionIcons';
 
 export const SimulationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -126,7 +127,7 @@ export const SimulationPage: React.FC = () => {
               DEVELOPER LAB &bull; SCENARIO SIMULATOR
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif-heading font-normal text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
             Simulation Lab
           </h1>
           <p className="text-xs text-[#64748B] mt-0.5">
@@ -147,8 +148,8 @@ export const SimulationPage: React.FC = () => {
             </>
           ) : (
             <>
-              <Zap className="w-3.5 h-3.5 text-[#F59E0B] fill-current" />
-              <span>1-Click Live Recovery Demo (₹24,900)</span>
+              <SimulateFailureIcon className="w-3.5 h-3.5" />
+              <span>1-Click Autonomous Loop Verification</span>
             </>
           )}
         </button>
@@ -279,9 +280,9 @@ export const SimulationPage: React.FC = () => {
           <button
             onClick={handleStartSimulation}
             disabled={customLoading}
-            className="px-6 py-2.5 rounded-xl text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-50 transition flex items-center gap-2 shadow-fintech-sm"
+            className="px-6 py-2.5 rounded-xl text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-50 transition flex items-center gap-2 shadow-fintech-sm group"
           >
-            {customLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+            {customLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SimulateFailureIcon className="w-3.5 h-3.5" />}
             <span>Run Recovery Scenario</span>
           </button>
         </div>
