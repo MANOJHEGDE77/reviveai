@@ -54,34 +54,34 @@ export const AuditPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#E5E1D8]">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#DCD8CF]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B]">
               05 &bull; IMMUTABLE AUDIT TRAIL
             </span>
-            <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-mono font-medium text-[#475569]">
+            <span className="text-[#C8C3B7]">&bull;</span>
+            <span className="text-xs font-mono font-medium text-[#666A6B]">
               Compliance Ledger
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111216] mt-1">
             Compliance Audit Ledger
           </h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs text-[#666A6B] mt-0.5">
             Immutable chronological record of every AI reasoning step, guardrail validation, and recovery outcome.
           </p>
         </div>
 
         {/* View Switcher (Timeline vs Details Table) */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="flex rounded-lg bg-[#FAF8F5] border border-[#DDD8CC] p-0.5 text-xs font-mono">
+          <div className="flex rounded-lg bg-[#F4F1E9] border border-[#DCD8CF] p-0.5 text-xs font-mono">
             <button
               onClick={() => setViewMode('timeline')}
               className={`px-3 py-1.5 rounded-md transition font-medium ${
                 viewMode === 'timeline'
-                  ? 'bg-[#0F172A] text-white font-bold shadow-fintech-xs'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'bg-[#111216] text-white font-bold shadow-xs'
+                  : 'text-[#666A6B] hover:text-[#111216]'
               }`}
             >
               Timeline
@@ -90,8 +90,8 @@ export const AuditPage: React.FC = () => {
               onClick={() => setViewMode('details')}
               className={`px-3 py-1.5 rounded-md transition font-medium ${
                 viewMode === 'details'
-                  ? 'bg-[#0F172A] text-white font-bold shadow-fintech-xs'
-                  : 'text-[#64748B] hover:text-[#0F172A]'
+                  ? 'bg-[#111216] text-white font-bold shadow-xs'
+                  : 'text-[#666A6B] hover:text-[#111216]'
               }`}
             >
               Technical Table
@@ -100,10 +100,10 @@ export const AuditPage: React.FC = () => {
 
           <button
             onClick={fetchLogs}
-            className="p-2 rounded-lg bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] text-[#64748B] hover:text-[#0F172A] transition"
+            className="p-2 rounded-lg bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] text-[#666A6B] hover:text-[#111216] transition"
             title="Refresh logs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#059669]' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#168F5A]' : ''}`} />
           </button>
         </div>
       </div>
@@ -123,8 +123,8 @@ export const AuditPage: React.FC = () => {
               onClick={() => setActorFilter(tab.key)}
               className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
                 actorFilter === tab.key
-                  ? 'bg-[#0F172A] text-white font-bold shadow-fintech-xs'
-                  : 'bg-white text-[#64748B] hover:text-[#0F172A] border border-[#DDD8CC]'
+                  ? 'bg-[#111216] text-white font-bold shadow-xs'
+                  : 'bg-white text-[#666A6B] hover:text-[#111216] border border-[#DCD8CF]'
               }`}
             >
               {tab.label}

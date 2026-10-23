@@ -8,6 +8,22 @@ export default {
   theme: {
     extend: {
       colors: {
+        editorial: {
+          bg: '#F4F1E9',
+          surface: '#FFFFFF',
+          subtle: '#EDE9E0',
+          border: '#DCD8CF',
+          borderLight: '#E8E4DA',
+          text: '#111216',
+          muted: '#666A6B',
+          accent: '#168F5A',
+          accentHover: '#117348',
+          accentLight: '#EAF5EE',
+          accentBorder: '#B9E2CD',
+          tagRecovered: '#ECFDF5',
+          tagRisk: '#FFFBEB',
+          tagFailed: '#FEF2F2',
+        },
         fintech: {
           950: '#070A11',
           900: '#0C121E',
@@ -23,12 +39,12 @@ export default {
           50: '#F8FAFC',
         },
         brand: {
-          primary: '#0F172A',
-          accent: '#10B981',
+          primary: '#111216',
+          accent: '#168F5A',
           glow: '#34D399',
-          amber: '#F59E0B',
-          sapphire: '#3B82F6',
-          violet: '#8B5CF6',
+          amber: '#D97706',
+          sapphire: '#2563EB',
+          violet: '#7C3AED',
         }
       },
       fontFamily: {
@@ -37,6 +53,9 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       boxShadow: {
+        'editorial-card': '0 20px 40px -15px rgba(17, 18, 22, 0.07), 0 1px 3px rgba(17, 18, 22, 0.04)',
+        'editorial-panel': '0 12px 32px -8px rgba(17, 18, 22, 0.08), 0 2px 6px rgba(17, 18, 22, 0.03)',
+        'editorial-float': '0 24px 48px -12px rgba(17, 18, 22, 0.12), 0 4px 12px rgba(17, 18, 22, 0.04)',
         'fintech-xs': '0 1px 2px rgba(0, 0, 0, 0.04)',
         'fintech-sm': '0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03)',
         'fintech-md': '0 6px 16px -4px rgba(0, 0, 0, 0.07), 0 2px 6px -2px rgba(0, 0, 0, 0.04)',

@@ -112,31 +112,31 @@ export const IncidentDetailPage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
       {/* 1. Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-xs font-mono text-[#64748B]">
-        <Link to="/" className="hover:text-[#0F172A] transition">Home</Link>
-        <ChevronRight className="w-3 h-3 text-[#CBD5E1]" />
-        <Link to="/investigations" className="hover:text-[#0F172A] transition">Investigations</Link>
-        <ChevronRight className="w-3 h-3 text-[#CBD5E1]" />
-        <span className="text-[#0F172A] font-bold">{payment.payment_ref}</span>
+      <nav className="flex items-center gap-2 text-xs font-mono text-[#666A6B]">
+        <Link to="/" className="hover:text-[#111216] transition">Home</Link>
+        <ChevronRight className="w-3 h-3 text-[#C8C3B7]" />
+        <Link to="/investigations" className="hover:text-[#111216] transition">Investigations</Link>
+        <ChevronRight className="w-3 h-3 text-[#C8C3B7]" />
+        <span className="text-[#111216] font-bold">{payment.payment_ref}</span>
       </nav>
 
       {/* 2. Page Header & State-Aware Contextual Action */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#E5E1D8]">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#DCD8CF]">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="text-xs font-mono font-bold uppercase text-[#64748B]">
+            <span className="text-xs font-mono font-bold uppercase text-[#666A6B]">
               INCIDENT FORENSICS
             </span>
-            <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="font-mono text-sm font-bold text-[#0F172A]">{payment.payment_ref}</span>
+            <span className="text-[#C8C3B7]">&bull;</span>
+            <span className="font-mono text-sm font-bold text-[#111216]">{payment.payment_ref}</span>
             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${statusInfo.cls}`}>
               ● {statusInfo.label}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111216] mt-1">
             Forensic Incident Analysis
           </h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs text-[#666A6B] mt-0.5">
             {customer?.name} &bull; {formatINR(payment.amount)} &bull; {customer?.payment_method_masked} ({customer?.payment_method_type})
           </p>
         </div>
@@ -145,7 +145,7 @@ export const IncidentDetailPage: React.FC = () => {
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
             onClick={() => setExplainerOpen(true)}
-            className="px-3.5 py-2 rounded-lg text-xs font-mono font-medium text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] shadow-fintech-xs transition"
+            className="px-3.5 py-2 rounded-lg text-xs font-mono font-medium text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] shadow-xs transition"
           >
             Explain AI Decision
           </button>
@@ -153,7 +153,7 @@ export const IncidentDetailPage: React.FC = () => {
           {payment.status === 'REQUIRES_APPROVAL' ? (
             <button
               onClick={() => navigate('/approvals')}
-              className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#D97706] hover:bg-[#B45309] shadow-fintech-sm transition flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#B45309] hover:bg-[#92400E] shadow-xs transition flex items-center gap-1.5"
             >
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>Review Approval Queue</span>
@@ -161,7 +161,7 @@ export const IncidentDetailPage: React.FC = () => {
           ) : payment.status === 'RECOVERED' ? (
             <button
               onClick={() => navigate('/audit')}
-              className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#059669] hover:bg-[#047857] shadow-fintech-sm transition flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#168F5A] hover:bg-[#117348] shadow-xs transition flex items-center gap-1.5"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>View Audit Result</span>
@@ -170,7 +170,7 @@ export const IncidentDetailPage: React.FC = () => {
             <button
               onClick={handleSimulatePaymentSuccess}
               disabled={resolving}
-              className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#059669] hover:bg-[#047857] shadow-fintech-sm transition flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#168F5A] hover:bg-[#117348] shadow-xs transition flex items-center gap-1.5"
             >
               {resolving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 fill-current text-[#FDE047]" />}
               <span>Simulate Settle &amp; Recover</span>

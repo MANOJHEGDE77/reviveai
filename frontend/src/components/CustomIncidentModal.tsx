@@ -132,31 +132,31 @@ export const CustomIncidentModal: React.FC<CustomIncidentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/70 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-white rounded-2xl shadow-fintech-xl border border-[#E5E1D8] p-6 sm:p-8 space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111216]/60 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-white rounded-2xl shadow-editorial-float border border-[#DCD8CF] p-6 sm:p-8 space-y-6">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-xl text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1EFEA] transition"
+          className="absolute top-6 right-6 p-2 rounded-xl text-[#888B8C] hover:text-[#111216] hover:bg-[#F4F1E9] transition"
           title="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
-        <div className="pb-3 border-b border-[#EAE6DD] flex items-start gap-3.5">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#ECFDF5] to-[#D1FAE5] border border-[#A7F3D0] shadow-fintech-xs shrink-0">
+        <div className="pb-3 border-b border-[#EDE9E0] flex items-start gap-3.5">
+          <div className="p-2.5 rounded-xl bg-[#EAF5EE] border border-[#B9E2CD] shadow-xs shrink-0">
             <InjectIncidentIcon className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#059669] bg-[#ECFDF5] px-2.5 py-0.5 rounded-full border border-[#A7F3D0] inline-flex items-center gap-1.5">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#168F5A] bg-[#EAF5EE] px-2.5 py-0.5 rounded-full border border-[#B9E2CD] inline-flex items-center gap-1.5">
               <InjectIncidentIcon className="w-3 h-3" />
               REAL-WORLD INGESTION &bull; LIVE USER INPUT
             </span>
-            <h2 className="text-xl font-bold tracking-tight text-[#0F172A] mt-1">
+            <h2 className="text-xl font-bold tracking-tight text-[#111216] mt-1 font-heading">
               Ingest Payment Failure Incident
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#666A6B] mt-0.5 font-sans">
               Enter your real customer order details, error reasons, and amounts to watch ReviveAI diagnose and evaluate recovery guardrails live.
             </p>
           </div>

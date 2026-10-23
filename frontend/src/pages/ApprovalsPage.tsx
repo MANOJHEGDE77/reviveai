@@ -58,30 +58,30 @@ export const ApprovalsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#E5E1D8]">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#DCD8CF]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B]">
               04 &bull; HUMAN GOVERNANCE QUEUE
             </span>
-            <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-mono font-medium text-[#475569]">
+            <span className="text-[#C8C3B7]">&bull;</span>
+            <span className="text-xs font-mono font-medium text-[#666A6B]">
               Approvals
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111216] mt-1">
             Human Approvals
           </h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs text-[#666A6B] mt-0.5">
             Authorize high-value financial actions and risk policy escalations (&ge; ₹50,000 threshold).
           </p>
         </div>
 
         <button
           onClick={fetchApprovals}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#475569] hover:text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs self-start sm:self-auto"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#666A6B] hover:text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition shadow-xs self-start sm:self-auto"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#059669]' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#168F5A]' : ''}`} />
           <span>Refresh</span>
         </button>
       </div>
@@ -97,8 +97,8 @@ export const ApprovalsPage: React.FC = () => {
             onClick={() => setStatusFilter(tab.key)}
             className={`px-3.5 py-1.5 rounded-lg transition ${
               statusFilter === tab.key
-                ? 'bg-[#0F172A] text-white font-bold shadow-fintech-xs'
-                : 'bg-white text-[#64748B] hover:text-[#0F172A] border border-[#DDD8CC]'
+                ? 'bg-[#111216] text-white font-bold shadow-xs'
+                : 'bg-white text-[#666A6B] hover:text-[#111216] border border-[#DCD8CF]'
             }`}
           >
             {tab.label}
@@ -108,15 +108,15 @@ export const ApprovalsPage: React.FC = () => {
 
       {/* 3. Approvals List / Empty State */}
       {loading ? (
-        <div className="editorial-surface rounded-2xl p-12 text-center text-[#64748B] font-mono text-xs space-y-2">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#0F172A]" />
+        <div className="editorial-surface rounded-2xl p-12 text-center text-[#666A6B] font-mono text-xs space-y-2">
+          <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#111216]" />
           <p>Checking pending approval queue...</p>
         </div>
       ) : displayList.length === 0 ? (
         <div className="editorial-surface rounded-2xl p-16 text-center bg-white space-y-3">
-          <ShieldCheck className="w-10 h-10 mx-auto text-[#059669]" />
-          <h3 className="text-sm font-bold text-[#0F172A]">You're all clear.</h3>
-          <p className="text-xs text-[#64748B] max-w-md mx-auto font-sans">
+          <ShieldCheck className="w-10 h-10 mx-auto text-[#168F5A]" />
+          <h3 className="text-sm font-bold text-[#111216]">You're all clear.</h3>
+          <p className="text-xs text-[#666A6B] max-w-md mx-auto font-sans">
             No recovery actions currently require human operator sign-off. All autonomous recovery actions are operating safely within configured limits.
           </p>
         </div>
@@ -128,53 +128,53 @@ export const ApprovalsPage: React.FC = () => {
             return (
               <div
                 key={appr.id}
-                className="editorial-surface rounded-2xl p-6 sm:p-7 bg-white space-y-5 shadow-fintech-xs hover:border-[#CEC8BB] transition"
+                className="editorial-surface rounded-2xl p-6 sm:p-7 bg-white space-y-5 shadow-xs hover:border-[#C8C3B7] transition"
               >
                 {/* Top Strip */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#EAE6DD]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#EDE9E0]">
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-[#D97706] font-bold bg-[#FFFBEB] px-2.5 py-0.5 rounded-full border border-[#FDE68A]">
+                    <span className="text-[10px] font-mono uppercase text-[#B45309] font-bold bg-[#FFFBEB] px-2.5 py-0.5 rounded-full border border-[#FDE68A]">
                       HUMAN SIGN-OFF MANDATED (&ge; ₹50,000 THRESHOLD)
                     </span>
-                    <h3 className="text-xl font-bold font-mono text-[#0F172A] mt-1.5">
+                    <h3 className="text-xl font-bold font-mono text-[#111216] mt-1.5">
                       {formatINR(appr.amount)} Enterprise Recovery Action
                     </h3>
-                    <p className="text-xs text-[#64748B] font-mono">
-                      Customer: <strong className="text-[#0F172A]">{appr.customer_name}</strong> &bull; Ref: {appr.approval_ref}
+                    <p className="text-xs text-[#666A6B] font-mono">
+                      Customer: <strong className="text-[#111216]">{appr.customer_name}</strong> &bull; Ref: {appr.approval_ref}
                     </p>
                   </div>
 
                   <div className="text-left sm:text-right font-mono text-xs">
-                    <span className="text-[10px] text-[#94A3B8] uppercase block font-bold">AI Confidence</span>
-                    <span className="text-sm font-bold text-[#059669] block">{appr.ai_confidence}%</span>
-                    <span className="text-[11px] text-[#94A3B8] block">{formatDateTime(appr.created_at)}</span>
+                    <span className="text-[10px] text-[#888B8C] uppercase block font-bold">AI Confidence</span>
+                    <span className="text-sm font-bold text-[#168F5A] block">{appr.ai_confidence}%</span>
+                    <span className="text-[11px] text-[#888B8C] block">{formatDateTime(appr.created_at)}</span>
                   </div>
                 </div>
 
                 {/* Evidence & Decision Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-                  <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] space-y-1">
-                    <span className="text-[#64748B] text-[10px] uppercase block font-bold">Recommended Action</span>
-                    <strong className="text-[#1E40AF] block text-xs">{appr.ai_recommendation}</strong>
-                    <p className="text-[11px] text-[#475569] font-sans pt-1 leading-relaxed">
+                  <div className="p-4 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] space-y-1">
+                    <span className="text-[#666A6B] text-[10px] uppercase block font-bold">Recommended Action</span>
+                    <strong className="text-[#1D4ED8] block text-xs">{appr.ai_recommendation}</strong>
+                    <p className="text-[11px] text-[#666A6B] font-sans pt-1 leading-relaxed">
                       Reason: {appr.evidence_reason || 'High customer lifetime value with temporary mandate authorization lapse.'}
                     </p>
                   </div>
 
-                  <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] space-y-1">
-                    <span className="text-[#64748B] text-[10px] uppercase block font-bold">Guardrail Policy Trigger</span>
-                    <strong className="text-[#D97706] block text-xs">Escalated: High-Value Threshold</strong>
-                    <p className="text-[11px] text-[#475569] font-sans pt-1 leading-relaxed">
+                  <div className="p-4 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] space-y-1">
+                    <span className="text-[#666A6B] text-[10px] uppercase block font-bold">Guardrail Policy Trigger</span>
+                    <strong className="text-[#B45309] block text-xs">Escalated: High-Value Threshold</strong>
+                    <p className="text-[11px] text-[#666A6B] font-sans pt-1 leading-relaxed">
                       Transaction value {formatINR(appr.amount)} exceeds autonomous ₹50,000 threshold.
                     </p>
                   </div>
                 </div>
 
                 {/* Decision Actions */}
-                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#EAE6DD]">
+                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#EDE9E0]">
                   <button
                     onClick={() => navigate(`/investigations/${appr.payment_id}`)}
-                    className="text-xs font-mono font-semibold text-[#64748B] hover:text-[#0F172A] flex items-center gap-1 transition order-2 sm:order-1"
+                    className="text-xs font-mono font-semibold text-[#666A6B] hover:text-[#111216] flex items-center gap-1 transition order-2 sm:order-1"
                   >
                     <span>View Forensic Investigation</span>
                     <ArrowRight className="w-3 h-3" />
@@ -185,7 +185,7 @@ export const ApprovalsPage: React.FC = () => {
                       <button
                         onClick={() => handleDecision(appr.id, 'REJECT')}
                         disabled={isProcessing}
-                        className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-[#DC2626] bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FECACA] transition"
+                        className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-[#B91C1C] bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FECACA] transition"
                       >
                         Reject Action
                       </button>
@@ -193,14 +193,14 @@ export const ApprovalsPage: React.FC = () => {
                       <button
                         onClick={() => handleDecision(appr.id, 'APPROVE')}
                         disabled={isProcessing}
-                        className="px-5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#059669] hover:bg-[#047857] shadow-fintech-sm transition flex items-center gap-1.5"
+                        className="px-5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#168F5A] hover:bg-[#117348] shadow-xs transition flex items-center gap-1.5"
                       >
                         {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                         <span>Approve Recovery Action</span>
                       </button>
                     </div>
                   ) : (
-                    <span className="text-xs font-mono font-bold text-[#64748B] order-1 sm:order-2">
+                    <span className="text-xs font-mono font-bold text-[#666A6B] order-1 sm:order-2">
                       Status: {appr.status} ({appr.decision_by})
                     </span>
                   )}

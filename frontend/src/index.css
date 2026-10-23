@@ -10,7 +10,7 @@
   }
 
   body {
-    @apply bg-[#FAF8F5] text-[#0F172A] antialiased;
+    @apply bg-[#F4F1E9] text-[#111216] antialiased selection:bg-[#E2DDD3] selection:text-[#111216];
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
@@ -20,23 +20,32 @@
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #F1EFEA;
+    background: #EDE9E0;
   }
   ::-webkit-scrollbar-thumb {
-    background: #D0CCC2;
+    background: #C8C3B7;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #B4AEA0;
+    background: #ACA698;
   }
 }
 
-/* Executive Display Typography - Zero Italics, Crisp Modern Spacing */
-.font-heading,
-.font-serif-heading {
+/* Editorial Display Typography */
+.editorial-headline {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  letter-spacing: -0.025em;
-  font-style: normal;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  font-weight: 700;
+}
+
+.editorial-section-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #666A6B;
 }
 
 .mono-num {
@@ -48,15 +57,41 @@
 /* Tactile High-Precision Financial Surfaces */
 .editorial-surface {
   background: #FFFFFF;
-  border: 1px solid #E5E1D8;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.02);
+  border: 1px solid #DCD8CF;
+  box-shadow: 0 1px 3px rgba(17, 18, 22, 0.03), 0 1px 2px rgba(17, 18, 22, 0.02);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .editorial-surface-hover:hover {
-  border-color: #CEC8BB;
-  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+  border-color: #C8C3B7;
+  box-shadow: 0 12px 28px -6px rgba(17, 18, 22, 0.08), 0 2px 6px -2px rgba(17, 18, 22, 0.04);
   transform: translateY(-1px);
+}
+
+.editorial-panel {
+  background: #FFFFFF;
+  border: 1px solid #DCD8CF;
+  box-shadow: 0 20px 40px -15px rgba(17, 18, 22, 0.07), 0 1px 3px rgba(17, 18, 22, 0.03);
+  border-radius: 1rem;
+}
+
+.editorial-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  background: #FFFFFF;
+  border: 1px solid #DCD8CF;
+  color: #111216;
+  transition: all 0.15s ease;
+}
+
+.editorial-chip:hover {
+  border-color: #168F5A;
+  color: #168F5A;
 }
 
 /* Glassmorphism & High-Impact Overlays */
@@ -92,33 +127,33 @@
 
 /* Curated Status Pills */
 .state-tag-recovered {
-  background: #ECFDF5;
-  border: 1px solid #A7F3D0;
-  color: #065F46;
+  background: #EAF5EE;
+  border: 1px solid #B9E2CD;
+  color: #168F5A;
 }
 
 .state-tag-risk {
   background: #FFFBEB;
   border: 1px solid #FDE68A;
-  color: #92400E;
+  color: #B45309;
 }
 
 .state-tag-failed {
   background: #FEF2F2;
   border: 1px solid #FECACA;
-  color: #991B1B;
+  color: #B91C1C;
 }
 
 .state-tag-investigating {
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
-  color: #1E40AF;
+  color: #1D4ED8;
 }
 
 .state-tag-neutral {
-  background: #F3F1EC;
-  border: 1px solid #E2DED5;
-  color: #475569;
+  background: #EDE9E0;
+  border: 1px solid #DCD8CF;
+  color: #666A6B;
 }
 
 /* Pulsing radar for live state */

@@ -1,863 +1,1480 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   ShieldCheck,
   Zap,
   CheckCircle2,
-  Lock,
   Clock,
-  ChevronRight,
   Play,
   RotateCcw,
   Check,
   Loader2,
-  ChevronDown,
   Sparkles,
-  Activity,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Sliders,
+  Database,
+  Lock,
   Layers,
-  HelpCircle,
-  ShieldAlert,
-  CreditCard,
-  Smartphone,
-  Building
+  Search,
+  CheckCircle,
+  XCircle,
+  FileText
 } from 'lucide-react';
-import { apiClient, formatINR } from '../api/client';
-import { DashboardSummary, Payment } from '../types';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar
+} from 'recharts';
+import { apiClient, formatINR, formatDateTime } from '../api/client';
+import { DashboardSummary, Payment, ApprovalRequest, AuditLog, DemoScenarioResult } from '../types';
 import { BrandLogo } from '../components/BrandLogo';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+
+  // 1. Data States
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [incidents, setIncidents] = useState<Payment[]>([]);
+  const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Hero Automated Animation State (5-7 seconds sequential journey)
-  const [heroStep, setHeroStep] = useState<number>(0);
-  const [heroPlaying, setHeroPlaying] = useState<boolean>(true);
+  // 2. Interactive Hero Interface State
+  const [selectedTxnId, setSelectedTxnId] = useState<number | null>(null);
+  const [heroRecoveryRunning, setHeroRecoveryRunning] = useState(false);
+  const [heroRecoverySuccess, setHeroRecoverySuccess] = useState(false);
+  const [heroScenarioResult, setHeroScenarioResult] = useState<DemoScenarioResult | null>(null);
+  const [heroTimelineStep, setHeroTimelineStep] = useState(2); // 0 to 5
 
-  // Interactive Expandable Stages
-  const [expandedProcess, setExpandedProcess] = useState<number | null>(0);
+  // 3. Numbered Project Presentation / Slide Navigator State
+  const [currentSlide, setCurrentSlide] = useState(0); // 0 to 4 (01 to 05)
 
-  // Interactive Custom User Input Studio State (Live User Input)
-  const [customName, setCustomName] = useState('My Store Merchant');
-  const [customAmount, setCustomAmount] = useState<number>(18500);
-  const [customCategory, setCustomCategory] = useState<string>('TEMPORARY_DECLINE');
-  const [customMethod, setCustomMethod] = useState<string>('CARD');
-  const [customDiagnosing, setCustomDiagnosing] = useState(false);
-  const [customResult, setCustomResult] = useState<Payment | null>(null);
-
-  // Interactive ROI Calculator State
-  const [roiVolume, setRoiVolume] = useState<number>(5000000); // 50 Lakhs
+  // 4. Slide 01: Interactive ROI Calculator State
+  const [roiMonthlyGmv, setRoiMonthlyGmv] = useState<number>(10000000); // 1 Crore
   const [roiFailureRate, setRoiFailureRate] = useState<number>(12); // 12%
 
-  useEffect(() => {
-    apiClient.getDashboardSummary().then((data) => setSummary(data)).catch(() => {});
+  // 5. Slide 02: Interactive Forensic Diagnosis State
+  const [diagName, setDiagName] = useState('Swiggy Cloud Kitchen Partner');
+  const [diagAmount, setDiagAmount] = useState<number>(24900);
+  const [diagCategory, setDiagCategory] = useState<string>('TEMPORARY_DECLINE');
+  const [diagMethod, setDiagMethod] = useState<string>('CARD');
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagResult, setDiagResult] = useState<Payment | null>(null);
+
+  // 6. Slide 04: Human Approval Action State
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [approvalFeedback, setApprovalFeedback] = useState<string | null>(null);
+
+  // 7. Slide 05: Audit Ledger Filter
+  const [auditActorFilter, setAuditActorFilter] = useState<string>('ALL');
+  const [auditSearch, setAuditSearch] = useState<string>('');
+
+  // Fetch initial telemetry and live queue
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [sumData, incData, apprData, logData] = await Promise.all([
+        apiClient.getDashboardSummary().catch(() => null),
+        apiClient.getIncidents({ limit: 6 } as any).catch(() => []),
+        apiClient.getApprovals('PENDING').catch(() => []),
+        apiClient.getAuditLogs({ limit: 8 }).catch(() => []),
+      ]);
+
+      if (sumData) setSummary(sumData);
+      if (incData && incData.length > 0) {
+        setIncidents(incData);
+        setSelectedTxnId(incData[0].id);
+      }
+      if (apprData) setApprovals(apprData);
+      if (logData) setAuditLogs(logData);
+    } catch (err) {
+      console.error('Failed to load initial landing data:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Automated Hero Sequence
   useEffect(() => {
-    if (!heroPlaying) return;
+    fetchData();
+  }, [fetchData]);
 
-    const timer1 = setTimeout(() => setHeroStep(1), 1000); // FAILED
-    const timer2 = setTimeout(() => setHeroStep(2), 2200); // INVESTIGATING
-    const timer3 = setTimeout(() => setHeroStep(3), 3400); // DIAGNOSIS
-    const timer4 = setTimeout(() => setHeroStep(4), 4600); // RECOVERY
-    const timer5 = setTimeout(() => {
-      setHeroStep(5); // RECOVERED
-      setHeroPlaying(false);
-    }, 5800);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-      clearTimeout(timer5);
+  // Keyboard navigation for project slides (ArrowLeft, ArrowRight)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'ArrowRight') {
+        setCurrentSlide((prev) => (prev < 4 ? prev + 1 : 0));
+      } else if (e.key === 'ArrowLeft') {
+        setCurrentSlide((prev) => (prev > 0 ? prev - 1 : 4));
+      }
     };
-  }, [heroPlaying]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-  const handleReplayHero = () => {
-    setHeroStep(0);
-    setHeroPlaying(true);
-  };
-
-  const handleRunCustomDiagnosis = async () => {
-    try {
-      setCustomDiagnosing(true);
-      const res = await apiClient.triggerSimulation({
-        customer_name: customName.trim() || 'My Online Store',
-        amount: Number(customAmount),
-        failure_category: customCategory,
-        payment_method_type: customMethod,
-        auto_execute: true,
-      });
-      setCustomResult(res);
-    } catch (err) {
-      console.error('Failed to run custom diagnosis:', err);
-    } finally {
-      setCustomDiagnosing(false);
+  // Compute Active Transaction in Hero
+  const selectedTxn = incidents.find((p) => p.id === selectedTxnId) || incidents[0] || {
+    id: 991,
+    payment_ref: 'PAY_11610',
+    amount: 24900,
+    currency: 'INR',
+    status: 'IN_RECOVERY' as const,
+    failure_category: 'TEMPORARY_DECLINE',
+    failure_reason: 'Temporary card switch throttle: Issuer server intermittent drop.',
+    ai_recommendation: 'DELAYED_RETRY',
+    ai_confidence: 91,
+    ai_diagnosis_summary: 'Temporary issuer throttle confirmed by gateway telemetry. Customer has 8 completed historical settlements.',
+    customer: {
+      name: 'Swiggy Cloud Kitchen Partner',
+      lifetime_value: 98400,
+      successful_transactions: 8,
+      payment_method_masked: '•••• 4821',
+      payment_method_type: 'CARD',
+    },
+    workflow: {
+      id: 11,
+      workflow_ref: 'RV-10821',
+      attempts: 1,
+      max_attempts: 2,
+      strategy: 'DELAYED_RETRY',
+      status: 'ACTIVE' as const,
     }
   };
 
-  const atRisk = summary?.revenue_at_risk || 482000;
-  const recoverable = summary?.estimated_recoverable || 291000;
-  const recovered = summary?.successfully_recovered || 147500;
-  const recoveryRate = summary?.recovery_rate || 42.8;
+  // Run 1-Click Simulated Recovery in Hero
+  const handleRunHeroRecovery = async () => {
+    try {
+      setHeroRecoveryRunning(true);
+      setHeroRecoverySuccess(false);
+      setHeroTimelineStep(3); // Attempting
 
-  const processSteps = [
+      const res = await apiClient.runDemoScenario();
+      setHeroScenarioResult(res);
+      setHeroTimelineStep(5); // Verified & Settled
+      setHeroRecoverySuccess(true);
+
+      // Refresh data
+      const updatedSummary = await apiClient.getDashboardSummary().catch(() => null);
+      if (updatedSummary) setSummary(updatedSummary);
+      const updatedIncidents = await apiClient.getIncidents({ limit: 6 } as any).catch(() => []);
+      if (updatedIncidents && updatedIncidents.length > 0) setIncidents(updatedIncidents);
+      const updatedLogs = await apiClient.getAuditLogs({ limit: 8 }).catch(() => []);
+      if (updatedLogs) setAuditLogs(updatedLogs);
+    } catch (err) {
+      console.error('Demo recovery error:', err);
+    } finally {
+      setHeroRecoveryRunning(false);
+    }
+  };
+
+  // Run Interactive Forensic Diagnosis (Slide 02)
+  const handleRunCustomDiagnosis = async () => {
+    try {
+      setDiagLoading(true);
+      const res = await apiClient.triggerSimulation({
+        customer_name: diagName.trim() || 'Merchant Partner',
+        amount: Number(diagAmount),
+        failure_category: diagCategory,
+        payment_method_type: diagMethod,
+        auto_execute: true,
+      });
+      setDiagResult(res);
+      // Refresh summary and incidents
+      fetchData();
+    } catch (err) {
+      console.error('Diagnosis failed:', err);
+    } finally {
+      setDiagLoading(false);
+    }
+  };
+
+  // Decide Approval in Slide 04
+  const handleApprovalDecision = async (id: number, decision: 'APPROVE' | 'REJECT') => {
+    try {
+      setApprovingId(id);
+      await apiClient.decideApproval(id, decision, `Manual sign-off executed via Risk Governance Console (${decision})`);
+      setApprovalFeedback(`Request #${id} marked as ${decision}. Audit event committed.`);
+      const updatedApprovals = await apiClient.getApprovals('PENDING').catch(() => []);
+      setApprovals(updatedApprovals);
+      fetchData();
+      setTimeout(() => setApprovalFeedback(null), 4000);
+    } catch (err) {
+      console.error('Approval failed:', err);
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  // Metrics from Live Summary
+  const atRisk = summary?.revenue_at_risk ?? 482000;
+  const recoverable = summary?.estimated_recoverable ?? 291000;
+  const recovered = summary?.successfully_recovered ?? 147500;
+  const recoveryRate = summary?.recovery_rate ?? 42.8;
+  const activeWfCount = summary?.active_workflows_count ?? 47;
+  const failedCount = summary?.failed_incidents_count ?? 12;
+
+  // Slide 01 ROI Calculations
+  const calculatedRisk = (roiMonthlyGmv * (roiFailureRate / 100));
+  const calculatedRecovered = calculatedRisk * (recoveryRate / 100);
+  const calculatedAnnual = calculatedRecovered * 12;
+
+  // Filtered Audit Logs for Slide 05
+  const filteredAuditLogs = auditLogs.filter((log) => {
+    if (auditActorFilter !== 'ALL' && log.actor !== auditActorFilter) return false;
+    if (auditSearch.trim()) {
+      const q = auditSearch.toLowerCase();
+      const matchText = `${log.event_type} ${log.decision} ${log.reason || ''} ${log.payment_ref || ''}`.toLowerCase();
+      return matchText.includes(q);
+    }
+    return true;
+  });
+
+  // Story Slides Metadata
+  const storySlides = [
     {
-      id: 0,
-      title: 'DETECT',
-      headline: 'Payment failure detected across gateway streams',
-      body: 'Monitors real-time payment webhooks across card networks, UPI switches, and subscription mandates to identify failure signatures the moment they occur.',
+      num: '01',
+      id: 'revenue-recovery',
+      tag: 'FINANCIAL ANATOMY',
+      title: 'Revenue Recovery',
+      subtitle: 'The hidden margin drain in online commerce',
+      desc: 'Over 60% of payment declines are not permanent credit failures. They are transient technical throttles, gateway timeouts, and expired sessions that can be autonomously salvaged.',
     },
     {
-      id: 1,
-      title: 'UNDERSTAND',
-      headline: 'Customer & transaction context assembled',
-      body: 'Gathers historical settlement reliability, customer lifetime value, card failure codes, and bank throttling logs to establish why the decline occurred.',
+      num: '02',
+      id: 'detect-diagnose',
+      tag: 'FORENSIC INTELLIGENCE',
+      title: 'Detect & Diagnose',
+      subtitle: 'Normalized failure classification and structured reasoning',
+      desc: 'Ingests decline payloads from card networks, UPI switches, and recurring mandates. AI models synthesize error codes, customer LTV, and historical settlement cadence into explainable diagnoses.',
     },
     {
-      id: 2,
-      title: 'DECIDE',
-      headline: 'AI calibrates optimal recovery strategy',
-      body: 'Matches failure signature to calibrated recovery playbooks (delayed retry cooldown, multi-rail PSP rerouting, 1-click cart recovery) with explainable confidence scores.',
+      num: '03',
+      id: 'recovery-engine',
+      tag: 'DETERMINISTIC GUARDRAILS',
+      title: 'Recovery Engine',
+      subtitle: 'Bounded state machines and financial safety bounds',
+      desc: 'Mathematical guardrails strictly cap retries at ≤ 2, enforce 120-minute issuer cooldowns, verify idempotency keys, and auto-terminate workflows upon settlement confirmation.',
     },
     {
-      id: 3,
-      title: 'ACT',
-      headline: 'Recovery executes within deterministic policy bounds',
-      body: 'Evaluates hard deterministic invariants (≤ 2 attempts, ₹50,000 human approval threshold, 24h window) before executing any financial operation.',
+      num: '04',
+      id: 'human-approval',
+      tag: 'GOVERNANCE & TRUST',
+      title: 'Human Approval',
+      subtitle: 'High-value threshold quarantine and operator sign-off',
+      desc: 'Any transaction ≥ ₹50,000 INR is halted by deterministic policy. The recovery strategy is assembled and quarantined in the Human Governance Queue awaiting authenticated authorization.',
     },
     {
-      id: 4,
-      title: 'VERIFY',
-      headline: 'Payment outcome verified & auto-terminated',
-      body: 'Verifies 3DS settlement, auto-terminates active workflows, updates merchant balances, and commits an immutable event to the compliance audit ledger.',
+      num: '05',
+      id: 'verification-audit',
+      tag: 'SOVEREIGN TRACEABILITY',
+      title: 'Verification & Audit',
+      subtitle: 'Authoritative settlement proof and immutable compliance ledger',
+      desc: 'Recovery is never declared until confirmed by authoritative bank responses. Every decision, guardrail check, operator note, and balance credit is recorded in an immutable audit ledger.',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#0F172A] font-sans selection:bg-[#E2DDD3] selection:text-[#0F172A]">
-      {/* 1. Standalone Landing Page Header */}
-      <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E5E1D8] px-6 sm:px-12 h-16 flex items-center justify-between">
-        {/* Left: Brand Insignia & Telemetry */}
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#F4F1E9] text-[#111216] font-sans selection:bg-[#E2DDD3] selection:text-[#111216]">
+      {/* 1. Top Editorial Navigation */}
+      <header className="sticky top-0 z-40 bg-[#F4F1E9]/95 backdrop-blur-md border-b border-[#DCD8CF] px-6 sm:px-12 h-16 flex items-center justify-between">
+        {/* Brand Wordmark & Insignia */}
+        <div className="flex items-center gap-4">
           <BrandLogo size="sm" subtitleText="AUTONOMOUS REVENUE RECOVERY" />
         </div>
 
-        {/* Center: Story Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-mono font-medium">
-          <a href="#how-it-works" className="text-[#64748B] hover:text-[#0F172A] transition">
+        {/* Editorial Story Links */}
+        <nav className="hidden md:flex items-center gap-8 text-xs font-mono font-medium text-[#666A6B]">
+          <a href="#product" className="hover:text-[#111216] transition">
+            Product
+          </a>
+          <a href="#how-it-works" className="hover:text-[#111216] transition">
             How it works
           </a>
-          <a href="#ai-decisions" className="text-[#64748B] hover:text-[#0F172A] transition">
-            AI decisions
+          <a href="#analytics" className="hover:text-[#111216] transition">
+            Recovery analytics
           </a>
-          <a href="#safety" className="text-[#64748B] hover:text-[#0F172A] transition">
-            Safety Guardrails
-          </a>
-          <a href="#demo" className="text-[#64748B] hover:text-[#0F172A] transition">
-            Live Demo
+          <a href="#audit-trust" className="hover:text-[#111216] transition">
+            Audit &amp; trust
           </a>
         </nav>
 
-        {/* Right: Enter ReviveAI Button */}
-        <button
-          onClick={() => navigate('/journey')}
-          className="group px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] transition flex items-center gap-2 shadow-fintech-sm"
-        >
-          <span>Launch Command Center</span>
-          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-        </button>
+        {/* Console Action */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/journey')}
+            className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#111216] hover:bg-[#23262D] transition flex items-center gap-2 shadow-sm"
+          >
+            <span>Launch Command Center</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </header>
 
-      {/* 2. Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 sm:px-12 pt-16 sm:pt-24 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
-          {/* Left Column: Editorial Narrative */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white border border-[#DDD8CC] shadow-fintech-xs text-xs font-mono font-semibold">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]" />
+      {/* 2. Hero Section (Two-Column Editorial Showcase) */}
+      <section id="product" className="max-w-7xl mx-auto px-6 sm:px-12 pt-12 sm:pt-16 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+          {/* Left Column: Editorial Headline & Narrative */}
+          <div className="lg:col-span-6 space-y-6">
+            {/* Numbered Category Tag */}
+            <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-white border border-[#DCD8CF] text-xs font-mono">
+              <span className="font-bold text-[#111216]">01</span>
+              <span className="text-[#A5A096]">&bull;</span>
+              <span className="text-[#168F5A] font-bold text-[11px] tracking-wider uppercase">
+                AUTONOMOUS REVENUE RECOVERY
               </span>
-              <span className="text-[#0F172A] font-bold">NEXT-GEN FINANCIAL INTELLIGENCE</span>
-              <span className="text-[#94A3B8]">&bull;</span>
-              <span className="text-[#059669] uppercase font-bold text-[10px]">ENTERPRISE REVENUE RECOVERY</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#0F172A] leading-[1.12]">
-              Revenue doesn't have <br />
-              to disappear after <br />
-              <span className="text-[#059669]">a failed payment.</span>
+            {/* Oversized Editorial Headline */}
+            <h1 className="editorial-headline text-4xl sm:text-5xl lg:text-[62px] text-[#111216] tracking-tight">
+              Turn failed payments into{' '}
+              <span className="text-[#168F5A]">recovered revenue.</span>
             </h1>
 
-            <h3 className="text-xl sm:text-2xl font-medium text-[#475569] leading-snug">
-              ReviveAI finds the recovery path.
-            </h3>
-
-            <p className="text-sm sm:text-base text-[#64748B] max-w-xl leading-relaxed font-sans">
-              Detect payment declines, diagnose root causes, execute bounded recovery playbooks, and verify settled revenue — automatically with mathematical explainability.
+            {/* Supporting Copy */}
+            <p className="text-base sm:text-lg text-[#666A6B] leading-relaxed max-w-xl font-sans">
+              An AI recovery agent that detects payment failures, diagnoses the cause, chooses a guarded recovery strategy, and verifies every outcome.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-4 font-mono">
+            {/* Trust Statement */}
+            <div className="p-3.5 rounded-xl bg-white/70 border border-[#DCD8CF] text-xs font-mono text-[#111216] flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#168F5A] shrink-0 mt-0.5" />
+              <span>
+                <strong>Guarded by Design:</strong> AI recommends the action. Deterministic rules enforce the guardrails. Every recovery is traceable.
+              </span>
+            </div>
+
+            {/* Capability Chips */}
+            <div className="flex flex-wrap gap-2 pt-2">
+              {[
+                'Intelligent Failure Diagnosis',
+                'Guarded Payment Retries',
+                'Recovery Verification',
+                'Human Approval',
+                'Complete Audit Trail',
+              ].map((chip) => (
+                <span key={chip} className="editorial-chip">
+                  {chip}
+                </span>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-4 pt-4 font-mono text-xs">
+              <a
+                href="#how-it-works"
+                className="px-6 py-3 rounded-xl font-semibold text-white bg-[#111216] hover:bg-[#23262D] transition flex items-center gap-2 shadow-sm"
+              >
+                <span>Explore the system</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </a>
+
               <button
                 onClick={() => navigate('/journey')}
-                className="group px-6 py-3 rounded-xl text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] transition flex items-center gap-2 shadow-fintech-md"
+                className="px-5 py-3 rounded-xl font-semibold text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition flex items-center gap-2 shadow-xs"
               >
-                <span>Launch Command Center</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                <Zap className="w-3.5 h-3.5 text-[#168F5A]" />
+                <span>Open live console</span>
               </button>
-
-              <a
-                href="#demo"
-                className="px-5 py-3 rounded-xl text-xs font-semibold text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition flex items-center gap-2 shadow-fintech-xs"
-              >
-                <Play className="w-3.5 h-3.5 fill-current text-[#059669]" />
-                <span>Watch a Live Recovery ▶</span>
-              </a>
             </div>
-          </div>
 
-          {/* Right Column: Signature Visual — REVENUE RECOVERY PATH */}
-          <div className="lg:col-span-5">
-            <div className="editorial-surface rounded-2xl p-6 sm:p-7 bg-white space-y-4 shadow-fintech-md relative">
-              <div className="flex items-center justify-between pb-3 border-b border-[#EAE6DD]">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#64748B]">
-                  LIVE RECOVERY TELEMETRY
+            {/* Quick Metrics Bar */}
+            <div className="pt-6 border-t border-[#DCD8CF] grid grid-cols-3 gap-4 font-mono text-left">
+              <div>
+                <span className="text-[10px] text-[#666A6B] uppercase font-bold block">
+                  FAILURES DETECTED
                 </span>
-                <button
-                  onClick={handleReplayHero}
-                  className="text-[10px] font-mono text-[#64748B] hover:text-[#0F172A] flex items-center gap-1 transition"
-                  title="Replay animation"
-                >
-                  <RotateCcw className={`w-3 h-3 ${heroPlaying ? 'animate-spin text-[#059669]' : ''}`} />
-                  <span>Replay journey</span>
-                </button>
+                <span className="text-xl sm:text-2xl font-bold text-[#111216] block mt-0.5 mono-num">
+                  {formatINR(atRisk, true)}
+                </span>
+                <span className="text-[11px] text-[#666A6B] font-sans">Under monitoring</span>
               </div>
 
-              {/* Animated 5-Stage Path */}
-              <div className="relative pl-6 border-l-2 border-[#E5E1D8] space-y-3.5 font-mono text-xs">
-                {/* Node 0: Ingested Payment */}
-                <div className={`relative transition-all duration-300 ${heroStep >= 0 ? 'opacity-100' : 'opacity-30'}`}>
-                  <div className="absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full bg-[#0F172A] border-2 border-white" />
-                  <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#E5E1D8]">
-                    <span className="text-[10px] text-[#64748B] uppercase block font-bold">INGESTED PAYMENT</span>
-                    <strong className="text-sm font-bold text-[#0F172A] block">₹24,900.00</strong>
-                    <span className="text-[11px] text-[#64748B] font-sans block">Swiggy Cloud Kitchen Partner</span>
+              <div>
+                <span className="text-[10px] text-[#168F5A] uppercase font-bold block">
+                  RECOVERED VALUE
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-[#168F5A] block mt-0.5 mono-num">
+                  {formatINR(recovered, true)}
+                </span>
+                <span className="text-[11px] text-[#666A6B] font-sans">Settled revenue</span>
+              </div>
+
+              <div>
+                <span className="text-[10px] text-[#666A6B] uppercase font-bold block">
+                  RECOVERY YIELD
+                </span>
+                <span className="text-xl sm:text-2xl font-bold text-[#111216] block mt-0.5 mono-num">
+                  {recoveryRate.toFixed(1)}%
+                </span>
+                <span className="text-[11px] text-[#666A6B] font-sans">Autonomous success</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Realistic Floating Product Interface Panel */}
+          <div className="lg:col-span-6">
+            <div className="editorial-panel p-5 sm:p-6 bg-white space-y-4 relative border border-[#DCD8CF]">
+              {/* Window Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-[#EDE9E0]">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#168F5A] animate-pulse" />
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#111216]">
+                    RECONCILIATION ENGINE &bull; LIVE RUNTIME
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#EAF5EE] text-[#168F5A] border border-[#B9E2CD]">
+                  Guardrails Active (Cap &le; 2)
+                </span>
+              </div>
+
+              {/* A. Revenue Recovery Summary Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-left font-mono">
+                <div className="p-2.5 rounded-lg bg-[#F4F1E9] border border-[#DCD8CF]">
+                  <span className="text-[9px] uppercase text-[#666A6B] block font-bold">
+                    AT RISK
+                  </span>
+                  <span className="text-sm font-bold text-[#B45309] block mono-num">
+                    {formatINR(atRisk, true)}
+                  </span>
+                  <span className="text-[10px] text-[#666A6B] font-sans">{failedCount} incidents</span>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-[#F4F1E9] border border-[#DCD8CF]">
+                  <span className="text-[9px] uppercase text-[#666A6B] block font-bold">
+                    IN FLIGHT
+                  </span>
+                  <span className="text-sm font-bold text-[#1D4ED8] block mono-num">
+                    {activeWfCount} active
+                  </span>
+                  <span className="text-[10px] text-[#666A6B] font-sans">Bounded loops</span>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-[#F4F1E9] border border-[#DCD8CF]">
+                  <span className="text-[9px] uppercase text-[#168F5A] block font-bold">
+                    RECOVERED
+                  </span>
+                  <span className="text-sm font-bold text-[#168F5A] block mono-num">
+                    {formatINR(recovered, true)}
+                  </span>
+                  <span className="text-[10px] text-[#168F5A] font-sans">Verified</span>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-[#F4F1E9] border border-[#DCD8CF]">
+                  <span className="text-[9px] uppercase text-[#666A6B] block font-bold">
+                    SUCCESS
+                  </span>
+                  <span className="text-sm font-bold text-[#111216] block mono-num">
+                    {recoveryRate.toFixed(1)}%
+                  </span>
+                  <span className="text-[10px] text-[#666A6B] font-sans">Yield rate</span>
+                </div>
+              </div>
+
+              {/* B. Transaction Queue (Interactive Selector) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="editorial-section-tag">
+                    TRANSACTION QUEUE ({incidents.length > 0 ? incidents.length : 3})
+                  </span>
+                  <span className="text-[10px] font-mono text-[#666A6B]">
+                    Click row to inspect diagnosis
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {(incidents.length > 0 ? incidents.slice(0, 3) : [selectedTxn]).map((txn) => {
+                    const isSelected = selectedTxn.id === txn.id;
+                    return (
+                      <div
+                        key={txn.id}
+                        onClick={() => setSelectedTxnId(txn.id)}
+                        className={`p-2.5 rounded-xl border text-xs font-mono cursor-pointer transition flex items-center justify-between gap-3 ${
+                          isSelected
+                            ? 'bg-white border-[#168F5A] shadow-xs'
+                            : 'bg-[#F4F1E9]/60 border-[#DCD8CF] hover:bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              txn.status === 'RECOVERED'
+                                ? 'bg-[#168F5A]'
+                                : txn.status === 'REQUIRES_APPROVAL'
+                                ? 'bg-[#B45309]'
+                                : 'bg-[#1D4ED8]'
+                            }`}
+                          />
+                          <div className="truncate">
+                            <span className="font-bold text-[#111216]">{txn.payment_ref}</span>
+                            <span className="text-[#666A6B] ml-2 text-[11px] truncate">
+                              {txn.customer?.name || 'Customer'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="font-bold text-[#111216] mono-num">
+                            {formatINR(txn.amount)}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              txn.status === 'RECOVERED'
+                                ? 'state-tag-recovered'
+                                : txn.status === 'REQUIRES_APPROVAL'
+                                ? 'state-tag-risk'
+                                : 'state-tag-investigating'
+                            }`}
+                          >
+                            {txn.status === 'REQUIRES_APPROVAL' ? 'APPROVAL' : txn.status}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* C. AI Diagnosis Panel */}
+              <div className="p-3.5 rounded-xl bg-[#F4F1E9] border border-[#DCD8CF] space-y-2 text-xs font-mono">
+                <div className="flex items-center justify-between pb-2 border-b border-[#DCD8CF]">
+                  <div>
+                    <span className="text-[10px] uppercase text-[#666A6B] block font-bold">
+                      INSPECTING: {selectedTxn.payment_ref}
+                    </span>
+                    <strong className="text-xs text-[#111216]">
+                      {selectedTxn.customer?.name || 'Partner Account'}
+                    </strong>
+                  </div>
+                  <span className="px-2 py-0.5 rounded bg-white border border-[#DCD8CF] text-[10px] font-bold text-[#168F5A]">
+                    {selectedTxn.ai_confidence || 91}% AI Confidence
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div>
+                    <span className="text-[#666A6B] block">Root Cause Diagnosis:</span>
+                    <strong className="text-[#111216] block">
+                      {selectedTxn.failure_category === 'TEMPORARY_DECLINE'
+                        ? 'Temporary Issuer Switch Throttle'
+                        : selectedTxn.failure_category === 'SUBSCRIPTION_DECLINE'
+                        ? 'Mandate Authorization Timeout'
+                        : selectedTxn.failure_category === 'CHECKOUT_ABANDONED'
+                        ? '3DS OTP Verification Drop-off'
+                        : 'PSP Network Connection Drop'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-[#666A6B] block">Guarded Recommendation:</span>
+                    <strong className="text-[#168F5A] block">
+                      {selectedTxn.ai_recommendation || 'DELAYED_RETRY (120m Cooldown)'}
+                    </strong>
                   </div>
                 </div>
 
-                {/* Node 1: FAILED */}
-                <div className={`relative transition-all duration-300 ${heroStep >= 1 ? 'opacity-100' : 'opacity-25'}`}>
-                  <div className={`absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-white ${heroStep >= 1 ? 'bg-[#D97706]' : 'bg-[#CBD5E1]'}`} />
-                  <div className={`p-3 rounded-xl border transition-all ${heroStep >= 1 ? 'bg-[#FFFBEB] border-[#FDE68A]' : 'bg-[#FAF8F5] border-[#E5E1D8]'}`}>
-                    <span className="text-[10px] text-[#D97706] uppercase block font-bold">1. PAYMENT FAILED</span>
-                    <strong className="text-xs text-[#92400E] block">Temporary issuer decline</strong>
-                    <span className="text-[11px] text-[#D97706] font-sans block">Bank switch rate-limit</span>
-                  </div>
+                <div className="pt-1 text-[10px] text-[#666A6B]">
+                  <strong>Evidence Cited:</strong> Customer CLV {formatINR(selectedTxn.customer?.lifetime_value || 98400, true)}, {selectedTxn.customer?.successful_transactions || 8} past successful settlements, zero disputes.
+                </div>
+              </div>
+
+              {/* D. Recovery Timeline & Interactive Trigger */}
+              <div>
+                <span className="editorial-section-tag block mb-2">
+                  CLOSED-LOOP TIMELINE ({heroTimelineStep + 1}/6 STAGES)
+                </span>
+
+                <div className="grid grid-cols-6 gap-1 font-mono text-[9px] text-center mb-3">
+                  {[
+                    '1. Detected',
+                    '2. Diagnosed',
+                    '3. Guardrail OK',
+                    '4. Retry Sent',
+                    '5. 3DS Verified',
+                    '6. Ledger Set',
+                  ].map((label, idx) => (
+                    <div
+                      key={label}
+                      className={`py-1.5 px-1 rounded transition ${
+                        idx <= heroTimelineStep
+                          ? 'bg-[#EAF5EE] text-[#168F5A] border border-[#B9E2CD] font-bold'
+                          : 'bg-[#EDE9E0] text-[#888B8C]'
+                      }`}
+                    >
+                      {label}
+                    </div>
+                  ))}
                 </div>
 
-                {/* Node 2: REVIVEAI INVESTIGATING */}
-                <div className={`relative transition-all duration-300 ${heroStep >= 2 ? 'opacity-100' : 'opacity-25'}`}>
-                  <div className={`absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-white ${heroStep >= 2 ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'}`} />
-                  <div className={`p-3 rounded-xl border transition-all ${heroStep >= 2 ? 'bg-[#EFF6FF] border-[#BFDBFE]' : 'bg-[#FAF8F5] border-[#E5E1D8]'}`}>
-                    <span className="text-[10px] text-[#2563EB] uppercase block font-bold">2. REVIVEAI INVESTIGATING</span>
-                    <span className="text-[11px] text-[#1E40AF] font-sans block">Analyzing 16 previous settled payments &bull; ₹84.2K CLV</span>
-                  </div>
+                {/* 1-Click Simulated Recovery Flow Action */}
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  <button
+                    onClick={handleRunHeroRecovery}
+                    disabled={heroRecoveryRunning}
+                    className="w-full sm:flex-1 py-2.5 px-3 rounded-lg text-xs font-mono font-semibold text-white bg-[#168F5A] hover:bg-[#117348] transition flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
+                  >
+                    {heroRecoveryRunning ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Executing Bounded Recovery...</span>
+                      </>
+                    ) : heroRecoverySuccess ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        <span>Recovery Verified! (₹24,900 Settled)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Run 1-Click Simulated Recovery</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => navigate(`/investigations/${selectedTxn.id}`)}
+                    className="w-full sm:w-auto py-2.5 px-3 rounded-lg text-xs font-mono font-medium text-[#111216] bg-[#F4F1E9] hover:bg-[#EDE9E0] border border-[#DCD8CF] transition flex items-center justify-center gap-1.5"
+                  >
+                    <span>Forensic Dossier</span>
+                    <ExternalLink className="w-3 h-3 text-[#666A6B]" />
+                  </button>
                 </div>
 
-                {/* Node 3: DIAGNOSIS */}
-                <div className={`relative transition-all duration-300 ${heroStep >= 3 ? 'opacity-100' : 'opacity-25'}`}>
-                  <div className={`absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-white ${heroStep >= 3 ? 'bg-[#0F172A]' : 'bg-[#CBD5E1]'}`} />
-                  <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#E5E1D8]">
-                    <span className="text-[10px] text-[#64748B] uppercase block font-bold">3. DIAGNOSIS (91% CONFIDENCE)</span>
-                    <strong className="text-xs text-[#0F172A] block">Temporary Rate-Limit Identified</strong>
-                  </div>
-                </div>
-
-                {/* Node 4: RECOVERY */}
-                <div className={`relative transition-all duration-300 ${heroStep >= 4 ? 'opacity-100' : 'opacity-25'}`}>
-                  <div className={`absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-white ${heroStep >= 4 ? 'bg-[#0F172A]' : 'bg-[#CBD5E1]'}`} />
-                  <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#E5E1D8]">
-                    <span className="text-[10px] text-[#64748B] uppercase block font-bold">4. RECOVERY STRATEGY</span>
-                    <strong className="text-xs text-[#1E40AF] block">Delayed Retry (120m Cooldown)</strong>
-                    <span className="text-[10px] text-[#059669] block font-bold">✓ Guardrail cleared &bull; Max 2 attempts</span>
-                  </div>
-                </div>
-
-                {/* Node 5: RECOVERED */}
-                <div className={`relative transition-all duration-300 ${heroStep >= 5 ? 'opacity-100 scale-100' : 'opacity-25'}`}>
-                  <div className={`absolute -left-[31px] top-1 w-3.5 h-3.5 rounded-full border-2 border-white ${heroStep >= 5 ? 'bg-[#059669]' : 'bg-[#CBD5E1]'}`} />
-                  <div className={`p-3 rounded-xl border transition-all ${heroStep >= 5 ? 'bg-[#ECFDF5] border-[#A7F3D0]' : 'bg-[#FAF8F5] border-[#E5E1D8]'}`}>
-                    <span className="text-[10px] text-[#065F46] uppercase block font-bold">5. RECOVERED &amp; SETTLED</span>
-                    <strong className="text-sm font-bold text-[#059669] block">₹24,900.00 Verified</strong>
-                    <span className="text-[11px] text-[#065F46] font-sans block">Settlement confirmed in merchant ledger</span>
-                  </div>
+                <div className="mt-2 text-[10px] font-mono text-[#666A6B] text-center">
+                  * Sandboxed simulation connecting to real FastAPI recovery engine and database state machine.
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Hero Bottom Metric Tickers */}
-        <div className="mt-12 pt-8 border-t border-[#E5E1D8] grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-left">
-          <div className="p-4 bg-white rounded-2xl border border-[#E5E1D8] shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#64748B] block font-bold">REVENUE AT RISK</span>
-            <span className="text-2xl font-bold text-[#D97706] block mt-0.5">{formatINR(atRisk)}</span>
-            <span className="text-[11px] text-[#64748B] block font-sans">Exposed failure volume</span>
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl border border-[#E5E1D8] shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#64748B] block font-bold">RECOVERABLE</span>
-            <span className="text-2xl font-bold text-[#1E40AF] block mt-0.5">{formatINR(recoverable)}</span>
-            <span className="text-[11px] text-[#64748B] block font-sans">Eligible via AI playbooks</span>
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl border border-[#E5E1D8] shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#64748B] block font-bold">RECOVERED</span>
-            <span className="text-2xl font-bold text-[#059669] block mt-0.5">{formatINR(recovered)}</span>
-            <span className="text-[11px] text-[#64748B] block font-sans">Settled revenue</span>
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl border border-[#E5E1D8] shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#64748B] block font-bold">RECOVERY YIELD</span>
-            <span className="text-2xl font-bold text-[#059669] block mt-0.5">{recoveryRate}%</span>
-            <span className="text-[11px] text-[#64748B] block font-sans">Autonomous conversion</span>
-          </div>
-        </div>
       </section>
 
-      {/* 3. Section — The Problem */}
-      <section className="max-w-5xl mx-auto px-6 sm:px-12 py-20 border-t border-[#E5E1D8] space-y-12">
-        <div className="space-y-3">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#64748B]">
-            THE HIDDEN DRAIN
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0F172A] leading-tight">
-            A failed payment isn't <br />
-            <span className="text-[#059669]">always a lost payment.</span>
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-xl leading-relaxed font-sans">
-            Most merchants treat payment failures as passive dead-ends. In reality, over 60% of declines are transient technical friction that can be autonomously recovered.
-          </p>
-        </div>
-
-        {/* 4 Real-world Failure Stages Sequence */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
-          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#DC2626] font-bold">STAGE 1</span>
-            <strong className="text-sm text-[#0F172A] block font-sans">Payment Declined</strong>
-            <p className="text-[11px] text-[#64748B] font-sans leading-relaxed">
-              Card network switch throttles during batch processing window or user drops off at 3DS.
-            </p>
+      {/* 3. Numbered Project Presentation & Interactive Story Navigator */}
+      <section id="how-it-works" className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[#DCD8CF]">
+        {/* Story Controller Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 border-b border-[#DCD8CF]">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="editorial-section-tag text-[#168F5A]">
+                INTERACTIVE PROJECT PRESENTATION
+              </span>
+              <span className="text-[#C8C3B7]">&bull;</span>
+              <span className="text-xs font-mono text-[#666A6B]">
+                Slide {storySlides[currentSlide].num} of 05
+              </span>
+            </div>
+            <h2 className="editorial-headline text-3xl sm:text-4xl text-[#111216] mt-1">
+              The Architecture of Autonomous Recovery
+            </h2>
           </div>
 
-          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#D97706] font-bold">STAGE 2</span>
-            <strong className="text-sm text-[#0F172A] block font-sans">Customer Leaves</strong>
-            <p className="text-[11px] text-[#64748B] font-sans leading-relaxed">
-              Friction causes buyer abandonment without attempting an alternative card or UPI app.
-            </p>
-          </div>
+          {/* Slide Arrow Controls + Keyboard Notice */}
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-[11px] font-mono text-[#666A6B]">
+              Use &larr; &rarr; arrow keys
+            </span>
 
-          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#64748B] font-bold">STAGE 3</span>
-            <strong className="text-sm text-[#0F172A] block font-sans">Retry Never Happens</strong>
-            <p className="text-[11px] text-[#64748B] font-sans leading-relaxed">
-              Merchant teams lack automated cooldown retry logic or multi-rail PSP failover.
-            </p>
-          </div>
-
-          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 shadow-fintech-xs">
-            <span className="text-[10px] uppercase text-[#DC2626] font-bold">STAGE 4</span>
-            <strong className="text-sm text-[#DC2626] block font-sans">Revenue Disappears</strong>
-            <p className="text-[11px] text-[#64748B] font-sans leading-relaxed">
-              A high-intent, recoverable order permanently becomes churned revenue.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Section — What ReviveAI Does */}
-      <section id="how-it-works" className="max-w-5xl mx-auto px-6 sm:px-12 py-20 border-t border-[#E5E1D8] space-y-12">
-        <div className="space-y-3">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#64748B]">
-            THE SOLUTION MECHANISM
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0F172A] leading-tight">
-            ReviveAI closes the loop <br />
-            <span className="text-[#059669]">between failure and recovery.</span>
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-xl font-sans">
-            Click each stage below to inspect how ReviveAI operates autonomously across your payment rails.
-          </p>
-        </div>
-
-        {/* Horizontal Process with Expandable Content */}
-        <div className="space-y-3 font-mono text-xs">
-          {processSteps.map((step) => {
-            const isExpanded = expandedProcess === step.id;
-
-            return (
-              <div
-                key={step.id}
-                onClick={() => setExpandedProcess(isExpanded ? null : step.id)}
-                className={`editorial-surface rounded-2xl transition-all cursor-pointer ${
-                  isExpanded
-                    ? 'bg-white border-[#0F172A] shadow-fintech-sm'
-                    : 'bg-[#FAF8F5] border-[#E5E1D8] hover:border-[#CEC8BB]'
-                }`}
+            <div className="flex items-center gap-1 bg-white border border-[#DCD8CF] p-1 rounded-xl shadow-xs">
+              <button
+                onClick={() => setCurrentSlide((prev) => (prev > 0 ? prev - 1 : 4))}
+                className="p-2 rounded-lg text-[#111216] hover:bg-[#F4F1E9] transition"
+                title="Previous Slide (ArrowLeft)"
               >
-                <div className="p-4 sm:p-5 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-[#94A3B8]">0{step.id + 1}</span>
-                    <strong className="text-xs sm:text-sm font-bold text-[#0F172A] font-sans">{step.title}</strong>
-                    <span className="text-xs text-[#64748B] hidden sm:inline">&bull; {step.headline}</span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-[#94A3B8] transition-transform ${isExpanded ? 'rotate-180 text-[#0F172A]' : ''}`} />
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="font-mono text-xs font-bold px-2 text-[#111216]">
+                {storySlides[currentSlide].num} / 05
+              </span>
+              <button
+                onClick={() => setCurrentSlide((prev) => (prev < 4 ? prev + 1 : 0))}
+                className="p-2 rounded-lg text-[#111216] hover:bg-[#F4F1E9] transition"
+                title="Next Slide (ArrowRight)"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Chapter Selector Pills */}
+        <div className="flex flex-wrap gap-2 py-4 font-mono text-xs overflow-x-auto">
+          {storySlides.map((slide, index) => (
+            <button
+              key={slide.num}
+              onClick={() => setCurrentSlide(index)}
+              className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-2 ${
+                currentSlide === index
+                  ? 'bg-[#111216] text-white font-bold shadow-xs'
+                  : 'bg-white text-[#666A6B] hover:text-[#111216] border border-[#DCD8CF] hover:bg-[#EDE9E0]'
+              }`}
+            >
+              <span className={currentSlide === index ? 'text-[#168F5A]' : 'text-[#888B8C]'}>
+                {slide.num}
+              </span>
+              <span>{slide.title}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Active Slide Body */}
+        <div className="mt-8">
+          {/* SLIDE 01: REVENUE RECOVERY */}
+          {currentSlide === 0 && (
+            <div className="editorial-panel p-6 sm:p-10 bg-white space-y-8">
+              <div className="max-w-2xl space-y-3">
+                <span className="editorial-section-tag text-[#168F5A]">
+                  01 &bull; REVENUE RECOVERY &bull; THE HIDDEN DRAIN
+                </span>
+                <h3 className="editorial-headline text-3xl sm:text-4xl text-[#111216]">
+                  A failed payment isn't a lost customer.
+                </h3>
+                <p className="text-sm sm:text-base text-[#666A6B] leading-relaxed">
+                  Traditional payment gateways simply report declines and give up. ReviveAI transforms declines into active recovery playbooks — calculating exact customer lifetime value, issuer cooldown windows, and autonomous retry trajectories.
+                </p>
+              </div>
+
+              {/* Interactive ROI Calculator */}
+              <div className="pt-6 border-t border-[#DCD8CF]">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sliders className="w-4 h-4 text-[#168F5A]" />
+                  <span className="editorial-section-tag text-[#111216]">
+                    INTERACTIVE REVENUE SALVAGE CALCULATOR
+                  </span>
                 </div>
 
-                {isExpanded && (
-                  <div className="px-5 pb-5 pt-1 text-xs font-sans text-[#475569] leading-relaxed border-t border-[#EAE6DD]">
-                    <p>{step.body}</p>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#F4F1E9] p-6 rounded-2xl border border-[#DCD8CF]">
+                  {/* Left Controls */}
+                  <div className="lg:col-span-7 space-y-5 font-mono text-xs">
+                    <div>
+                      <div className="flex justify-between mb-1.5">
+                        <label className="text-[#666A6B] font-bold">MONTHLY PROCESSED GMV</label>
+                        <span className="font-bold text-[#111216]">{formatINR(roiMonthlyGmv)}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={1000000}
+                        max={100000000}
+                        step={500000}
+                        value={roiMonthlyGmv}
+                        onChange={(e) => setRoiMonthlyGmv(Number(e.target.value))}
+                        className="w-full accent-[#168F5A] cursor-pointer"
+                      />
+                      <div className="flex justify-between text-[10px] text-[#888B8C] mt-1">
+                        <span>₹10 Lakhs</span>
+                        <span>₹5 Crores</span>
+                        <span>₹10 Crores</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between mb-1.5">
+                        <label className="text-[#666A6B] font-bold">ESTIMATED DECLINE RATE</label>
+                        <span className="font-bold text-[#111216]">{roiFailureRate}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={5}
+                        max={25}
+                        step={1}
+                        value={roiFailureRate}
+                        onChange={(e) => setRoiFailureRate(Number(e.target.value))}
+                        className="w-full accent-[#168F5A] cursor-pointer"
+                      />
+                      <div className="flex justify-between text-[10px] text-[#888B8C] mt-1">
+                        <span>5% (Low)</span>
+                        <span>12% (Industry Average)</span>
+                        <span>25% (High Friction)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Results */}
+                  <div className="lg:col-span-5 p-5 bg-white rounded-xl border border-[#DCD8CF] space-y-3 font-mono">
+                    <span className="text-[10px] uppercase font-bold text-[#666A6B] block">
+                      AUTONOMOUS YIELD ESTIMATE
+                    </span>
+
+                    <div className="space-y-1">
+                      <span className="text-[11px] text-[#666A6B] block">Monthly Revenue at Risk:</span>
+                      <strong className="text-lg font-bold text-[#B45309] block mono-num">
+                        {formatINR(calculatedRisk)}
+                      </strong>
+                    </div>
+
+                    <div className="space-y-1 pt-2 border-t border-[#EDE9E0]">
+                      <span className="text-[11px] text-[#168F5A] font-bold block">
+                        Monthly Recovered by ReviveAI ({recoveryRate.toFixed(1)}% Yield):
+                      </span>
+                      <strong className="text-2xl font-bold text-[#168F5A] block mono-num">
+                        {formatINR(calculatedRecovered)}
+                      </strong>
+                    </div>
+
+                    <div className="space-y-1 pt-2 border-t border-[#EDE9E0]">
+                      <span className="text-[11px] text-[#666A6B] block">Annual Net Margin Salvaged:</span>
+                      <strong className="text-xl font-bold text-[#111216] block mono-num">
+                        {formatINR(calculatedAnnual)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SLIDE 02: DETECT & DIAGNOSE */}
+          {currentSlide === 1 && (
+            <div className="editorial-panel p-6 sm:p-10 bg-white space-y-8">
+              <div className="max-w-2xl space-y-3">
+                <span className="editorial-section-tag text-[#168F5A]">
+                  02 &bull; DETECT &amp; DIAGNOSE &bull; EVIDENCE-BASED AI
+                </span>
+                <h3 className="editorial-headline text-3xl sm:text-4xl text-[#111216]">
+                  Normalized failure classification and structured reasoning.
+                </h3>
+                <p className="text-sm sm:text-base text-[#666A6B] leading-relaxed">
+                  Instead of cryptic bank codes like <code className="font-mono text-xs bg-[#EDE9E0] px-1 py-0.5 rounded">RZR_ERR_04</code>, ReviveAI pulls customer transaction history, card bin logs, and bank switch latency to construct an explainable diagnosis.
+                </p>
+              </div>
+
+              {/* Interactive Forensic Diagnosis Studio */}
+              <div className="p-6 rounded-2xl bg-[#F4F1E9] border border-[#DCD8CF] space-y-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#168F5A]" />
+                  <span className="editorial-section-tag text-[#111216]">
+                    LIVE AI FORENSIC DIAGNOSIS BENCH (REAL BACKEND API)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
+                  <div>
+                    <label className="text-[#666A6B] block mb-1 font-bold">Customer / Merchant</label>
+                    <input
+                      type="text"
+                      value={diagName}
+                      onChange={(e) => setDiagName(e.target.value)}
+                      className="w-full p-2 bg-white border border-[#DCD8CF] rounded-lg text-xs"
+                      placeholder="e.g. Swiggy Partner"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[#666A6B] block mb-1 font-bold">Amount in INR</label>
+                    <input
+                      type="number"
+                      value={diagAmount}
+                      onChange={(e) => setDiagAmount(Number(e.target.value))}
+                      className="w-full p-2 bg-white border border-[#DCD8CF] rounded-lg text-xs"
+                      placeholder="24900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[#666A6B] block mb-1 font-bold">Failure Category</label>
+                    <select
+                      value={diagCategory}
+                      onChange={(e) => setDiagCategory(e.target.value)}
+                      className="w-full p-2 bg-white border border-[#DCD8CF] rounded-lg text-xs"
+                    >
+                      <option value="TEMPORARY_DECLINE">Temporary Card Decline</option>
+                      <option value="CHECKOUT_ABANDONED">Checkout Abandoned</option>
+                      <option value="SUBSCRIPTION_DECLINE">Subscription Mandate</option>
+                      <option value="NETWORK_TIMEOUT">UPI Gateway Timeout</option>
+                      <option value="OVERDUE_INVOICE">Overdue B2B Invoice</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[#666A6B] block mb-1 font-bold">Payment Method</label>
+                    <select
+                      value={diagMethod}
+                      onChange={(e) => setDiagMethod(e.target.value)}
+                      className="w-full p-2 bg-white border border-[#DCD8CF] rounded-lg text-xs"
+                    >
+                      <option value="CARD">Credit / Debit Card</option>
+                      <option value="UPI">UPI Intent / Collect</option>
+                      <option value="NETBANKING">NetBanking Corporate</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleRunCustomDiagnosis}
+                  disabled={diagLoading}
+                  className="px-5 py-2.5 rounded-xl font-mono text-xs font-semibold text-white bg-[#111216] hover:bg-[#23262D] transition flex items-center gap-2 shadow-xs disabled:opacity-50"
+                >
+                  {diagLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Requesting Gemini Structured Diagnosis...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-3.5 h-3.5 text-[#168F5A]" />
+                      <span>Run AI Forensic Diagnosis</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Real Diagnosis Output */}
+                {diagResult && (
+                  <div className="mt-4 p-4 rounded-xl bg-white border border-[#B9E2CD] space-y-3 font-mono text-xs animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#EDE9E0]">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#168F5A]" />
+                        <span className="font-bold text-[#111216]">
+                          Diagnosis Complete: {diagResult.payment_ref}
+                        </span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-[#EAF5EE] text-[#168F5A] text-[10px] font-bold">
+                        {diagResult.ai_confidence || 88}% Confidence
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
+                      <div>
+                        <span className="text-[#666A6B] block">AI Rationale:</span>
+                        <p className="text-[#111216] font-sans mt-0.5">
+                          {diagResult.ai_diagnosis_summary || 'Analyzed historical settlement pattern and temporary gateway throttle.'}
+                        </p>
+                      </div>
+
+                      <div>
+                        <span className="text-[#666A6B] block">Selected Action:</span>
+                        <strong className="text-[#168F5A] block mt-0.5">
+                          {diagResult.ai_recommendation || 'DELAYED_RETRY'}
+                        </strong>
+                        <span className="text-[10px] text-[#666A6B]">
+                          Status: {diagResult.status} &bull; Risk: {diagResult.risk_level}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 5. Section — Explainable AI Decision */}
-      <section id="ai-decisions" className="max-w-5xl mx-auto px-6 sm:px-12 py-20 border-t border-[#E5E1D8] space-y-10">
-        <div className="space-y-3">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#64748B]">
-            EXPLAINABLE DECISION SYSTEM
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0F172A]">
-            A decision you can inspect.
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-xl leading-relaxed font-sans">
-            ReviveAI does not generate vague chatbot answers. It produces structured, mathematical decision reports with clear evidence citation.
-          </p>
-        </div>
-
-        {/* Real Investigation Report Card */}
-        <div className="editorial-surface rounded-2xl p-6 sm:p-8 bg-[#0F172A] text-white border border-[#0F172A] space-y-6 shadow-fintech-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#334155]">
-            <div>
-              <span className="text-[10px] font-mono uppercase text-[#34D399] font-bold flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
-                INCIDENT INVESTIGATION REPORT
-              </span>
-              <h3 className="text-xl font-bold text-white mt-1">
-                ₹24,900 &bull; Temporary Issuer Decline
-              </h3>
-              <p className="text-xs text-[#94A3B8] font-mono">
-                Customer: Swiggy Cloud Kitchen Partner &bull; Method: Card (•••• 4821)
-              </p>
-            </div>
-
-            <div className="text-left sm:text-right font-mono">
-              <span className="text-2xl font-bold text-[#34D399]">91%</span>
-              <span className="text-[10px] text-[#94A3B8] uppercase block">Certainty Score</span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#1E293B] border border-[#334155] space-y-3 font-mono text-xs">
-            <span className="text-[10px] uppercase text-[#94A3B8] font-bold block">
-              EVIDENCE ASSEMBLED
-            </span>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-              <div className="p-3 bg-[#0F172A] rounded-lg border border-[#334155]">
-                <span className="text-[#94A3B8] text-[10px] block">Customer Reliability</span>
-                <strong className="text-white text-xs block mt-0.5">16 Settled Txns</strong>
-              </div>
-              <div className="p-3 bg-[#0F172A] rounded-lg border border-[#334155]">
-                <span className="text-[#94A3B8] text-[10px] block">Historical Recovery</span>
-                <strong className="text-[#34D399] text-xs block mt-0.5">78% Cohort Yield</strong>
-              </div>
-              <div className="p-3 bg-[#0F172A] rounded-lg border border-[#334155]">
-                <span className="text-[#94A3B8] text-[10px] block">Issuer Error</span>
-                <strong className="text-white text-xs block mt-0.5">Temporary Throttling</strong>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-[#334155] flex items-center justify-between flex-wrap gap-2">
-              <span className="text-[#94A3B8]">Recommended Strategy:</span>
-              <strong className="text-[#34D399] font-bold text-xs">DELAYED RETRY (2 attempts max &bull; 120m interval)</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Section — Safety Guardrails */}
-      <section id="safety" className="max-w-5xl mx-auto px-6 sm:px-12 py-20 border-t border-[#E5E1D8] space-y-10">
-        <div className="space-y-3">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#64748B]">
-            FINANCIAL SAFETY
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0F172A]">
-            Autonomous doesn't mean <br />
-            <span className="text-[#059669]">uncontrolled.</span>
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-xl leading-relaxed font-sans">
-            Every autonomous recovery action is evaluated against deterministic financial guardrails before execution.
-          </p>
-        </div>
-
-        {/* Checkpoint Visual */}
-        <div className="editorial-surface rounded-2xl p-6 sm:p-8 bg-white space-y-6 shadow-fintech-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-[#EAE6DD]">
-            <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#0F172A]">
-              <ShieldCheck className="w-4 h-4 text-[#059669]" />
-              <span>DETERMINISTIC GUARDRAIL VERIFICATION</span>
-            </div>
-            <span className="text-xs font-mono font-bold text-[#059669] bg-[#ECFDF5] px-2.5 py-1 rounded-full border border-[#A7F3D0]">
-              ACTION CLEARED
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-            <div className="p-3.5 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] flex items-center justify-between">
-              <span>✓ Amount threshold limit</span>
-              <strong className="text-[#059669]">&lt; ₹50,000 INR</strong>
-            </div>
-
-            <div className="p-3.5 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] flex items-center justify-between">
-              <span>✓ Retry limit cap</span>
-              <strong className="text-[#059669]">Max 2 Attempts</strong>
-            </div>
-
-            <div className="p-3.5 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] flex items-center justify-between">
-              <span>✓ Idempotent duplicate check</span>
-              <strong className="text-[#059669]">Zero Double Charge</strong>
-            </div>
-
-            <div className="p-3.5 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] flex items-center justify-between">
-              <span>✓ Recovery window deadline</span>
-              <strong className="text-[#059669]">24 Hours Max</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. Section — Interactive Live Diagnostic Studio (Real User Input) */}
-      <section id="demo" className="max-w-5xl mx-auto px-6 sm:px-12 py-20 border-t border-[#E5E1D8] space-y-10">
-        <div className="space-y-3">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#059669] bg-[#ECFDF5] px-2.5 py-0.5 rounded-full border border-[#A7F3D0] inline-flex items-center gap-1.5">
-            <Sparkles className="w-3 h-3 text-[#10B981]" />
-            LIVE USER INPUT STUDIO &bull; NO CANNED DATA
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0F172A]">
-            Test with your own payments.
-          </h2>
-          <p className="text-sm text-[#64748B] max-w-xl font-sans leading-relaxed">
-            Enter your real customer order details, failure categories, and amounts. Watch ReviveAI's closed-loop reasoning and financial guardrails execute live on your exact input.
-          </p>
-        </div>
-
-        {/* Real User Input Card */}
-        <div className="editorial-surface rounded-2xl p-6 sm:p-8 bg-white space-y-6 shadow-fintech-md border border-[#E5E1D8]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
-            {/* Input 1: Customer Name */}
-            <div>
-              <label className="block text-[#475569] font-medium mb-1">
-                Merchant / Customer
-              </label>
-              <input
-                type="text"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                placeholder="e.g. Acme SaaS"
-                className="w-full px-3 py-2 rounded-xl border border-[#DDD8CC] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#0F172A] text-[#0F172A] font-sans text-xs"
-              />
-            </div>
-
-            {/* Input 2: Payment Amount */}
-            <div>
-              <label className="block text-[#475569] font-medium mb-1 flex items-center justify-between">
-                <span>Amount (INR)</span>
-                <span className="text-[10px] font-bold text-[#059669]">{formatINR(customAmount)}</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2 text-[#64748B] font-bold text-xs">₹</span>
-                <input
-                  type="number"
-                  min="1"
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(Number(e.target.value))}
-                  className="w-full pl-6 pr-3 py-2 rounded-xl border border-[#DDD8CC] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#0F172A] text-[#0F172A] font-bold text-xs"
-                />
-              </div>
-            </div>
-
-            {/* Input 3: Payment Rail */}
-            <div>
-              <label className="block text-[#475569] font-medium mb-1">
-                Payment Rail
-              </label>
-              <select
-                value={customMethod}
-                onChange={(e) => setCustomMethod(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[#DDD8CC] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#0F172A] text-[#0F172A] text-xs"
-              >
-                <option value="CARD">Credit / Debit Card</option>
-                <option value="UPI">UPI Intent / Collect</option>
-                <option value="NETBANKING">NetBanking</option>
-                <option value="MANDATE">Recurring eNACH</option>
-              </select>
-            </div>
-
-            {/* Input 4: Failure Category */}
-            <div>
-              <label className="block text-[#475569] font-medium mb-1">
-                Failure Signature
-              </label>
-              <select
-                value={customCategory}
-                onChange={(e) => setCustomCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[#DDD8CC] bg-[#FAF8F5] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#0F172A] text-[#0F172A] text-xs"
-              >
-                <option value="TEMPORARY_DECLINE">Bank Switch Throttle</option>
-                <option value="CHECKOUT_ABANDONED">3DS Page Drop-off</option>
-                <option value="SUBSCRIPTION_DECLINE">Mandate Debit Lapse</option>
-                <option value="NETWORK_TIMEOUT">HTTP 504 PSP Timeout</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Dynamic Guardrail Callout */}
-          {customAmount >= 50000 && (
-            <div className="p-3 bg-[#FFFBEB] border border-[#FDE68A] rounded-xl text-xs font-mono text-[#92400E] flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-[#D97706] shrink-0" />
-              <span>
-                <strong>Threshold Alert (&ge; ₹50,000):</strong> This transaction triggers the Deterministic Safety Guardrail. Autonomous charges will be locked and escalated to Human Governance.
-              </span>
             </div>
           )}
 
-          {/* Action Trigger */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-[#EAE6DD]">
-            <span className="text-xs text-[#64748B] font-sans">
-              Calls live backend AI agent &bull; Generates verifiable cryptographic ledger record
-            </span>
+          {/* SLIDE 03: RECOVERY ENGINE */}
+          {currentSlide === 2 && (
+            <div className="editorial-panel p-6 sm:p-10 bg-white space-y-8">
+              <div className="max-w-2xl space-y-3">
+                <span className="editorial-section-tag text-[#168F5A]">
+                  03 &bull; RECOVERY ENGINE &bull; DETERMINISTIC INVARIANTS
+                </span>
+                <h3 className="editorial-headline text-3xl sm:text-4xl text-[#111216]">
+                  AI recommends the playbook. Deterministic rules enforce the bounds.
+                </h3>
+                <p className="text-sm sm:text-base text-[#666A6B] leading-relaxed">
+                  Financial systems require non-negotiable safety. ReviveAI enforces 4 deterministic guardrails in code before any payment attempt is ever dispatched.
+                </p>
+              </div>
 
-            <button
-              onClick={handleRunCustomDiagnosis}
-              disabled={customDiagnosing}
-              className="px-6 py-3 rounded-xl text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-50 transition flex items-center gap-2 shadow-fintech-md self-start sm:self-auto"
-            >
-              {customDiagnosing ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#34D399]" />
-                  <span>Evaluating Live AI Diagnosis...</span>
-                </>
-              ) : (
-                <>
-                  <Zap className="w-3.5 h-3.5 text-[#F59E0B] fill-current" />
-                  <span>Run Live AI Diagnosis on My Input</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Custom Diagnostic Output Card */}
-          {customResult && (
-            <div className="p-5 rounded-xl bg-[#0F172A] text-white border border-[#1E293B] space-y-4 animate-fade-in font-mono text-xs shadow-fintech-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#334155]">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-bold text-[#34D399]">LIVE RESULT</span>
-                    <span className="text-[#64748B]">&bull;</span>
-                    <span className="font-bold text-white">{customResult.payment_ref}</span>
+              {/* Guardrails Matrix */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+                <div className="p-4 rounded-xl bg-[#F4F1E9] border border-[#DCD8CF] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold text-[#666A6B]">RULE 01</span>
+                    <Lock className="w-3.5 h-3.5 text-[#168F5A]" />
                   </div>
-                  <span className="text-sm font-bold block mt-0.5 text-white">
-                    {customResult.customer?.name} &bull; {formatINR(customResult.amount)}
-                  </span>
+                  <strong className="text-sm text-[#111216] block">Retry Limit &le; 2</strong>
+                  <p className="text-[11px] text-[#666A6B] font-sans leading-relaxed">
+                    Strictly prevents card burning, issuer blacklists, or repeated customer fee debits.
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                    customResult.status === 'REQUIRES_APPROVAL'
-                      ? 'bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]'
-                      : 'bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]'
-                  }`}>
-                    ● {customResult.status === 'REQUIRES_APPROVAL' ? 'HUMAN APPROVAL REQUIRED' : 'IN AUTONOMOUS RECOVERY'}
-                  </span>
+                <div className="p-4 rounded-xl bg-[#F4F1E9] border border-[#DCD8CF] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold text-[#666A6B]">RULE 02</span>
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#168F5A]" />
+                  </div>
+                  <strong className="text-sm text-[#111216] block">High-Value &ge; ₹50,000</strong>
+                  <p className="text-[11px] text-[#666A6B] font-sans leading-relaxed">
+                    Mandates human sign-off via Governance Queue before any action is executed.
+                  </p>
+                </div>
 
-                  <button
-                    onClick={() => navigate(`/investigations/${customResult.id}`)}
-                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-medium transition flex items-center gap-1.5"
-                  >
-                    <span>Inspect Forensics</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
+                <div className="p-4 rounded-xl bg-[#F4F1E9] border border-[#DCD8CF] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold text-[#666A6B]">RULE 03</span>
+                    <Clock className="w-3.5 h-3.5 text-[#168F5A]" />
+                  </div>
+                  <strong className="text-sm text-[#111216] block">24-Hour Expiry</strong>
+                  <p className="text-[11px] text-[#666A6B] font-sans leading-relaxed">
+                    Bounds recovery within standard banking settlement windows to prevent delayed double debits.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#F4F1E9] border border-[#DCD8CF] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold text-[#666A6B]">RULE 04</span>
+                    <CheckCircle className="w-3.5 h-3.5 text-[#168F5A]" />
+                  </div>
+                  <strong className="text-sm text-[#111216] block">Instant Auto-Termination</strong>
+                  <p className="text-[11px] text-[#666A6B] font-sans leading-relaxed">
+                    The moment payment is detected as settled, active workflows lock permanently to avoid double-charging.
+                  </p>
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-                <div className="p-3 bg-[#1E293B] rounded-lg border border-[#334155]">
-                  <span className="text-[#94A3B8] text-[10px] block">Recommended Action</span>
-                  <strong className="text-[#34D399] text-xs block mt-0.5">{customResult.ai_recommendation || 'DELAYED_RETRY'}</strong>
+          {/* SLIDE 04: HUMAN APPROVAL */}
+          {currentSlide === 3 && (
+            <div className="editorial-panel p-6 sm:p-10 bg-white space-y-8">
+              <div className="max-w-2xl space-y-3">
+                <span className="editorial-section-tag text-[#168F5A]">
+                  04 &bull; HUMAN GOVERNANCE &bull; RISK OPERATIONS
+                </span>
+                <h3 className="editorial-headline text-3xl sm:text-4xl text-[#111216]">
+                  High-stakes decisions keep humans in control.
+                </h3>
+                <p className="text-sm sm:text-base text-[#666A6B] leading-relaxed">
+                  Transactions exceeding ₹50,000 INR are quarantined by deterministic policy. Operators inspect full forensic reasoning, risk evidence, and execute authenticated sign-offs.
+                </p>
+              </div>
+
+              {/* Feedback toast */}
+              {approvalFeedback && (
+                <div className="p-3 rounded-lg bg-[#EAF5EE] border border-[#B9E2CD] text-xs font-mono text-[#168F5A] flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{approvalFeedback}</span>
+                </div>
+              )}
+
+              {/* Live Approvals Queue */}
+              <div className="space-y-3 font-mono text-xs">
+                <span className="editorial-section-tag text-[#666A6B]">
+                  PENDING HUMAN SIGN-OFF QUEUE ({approvals.length})
+                </span>
+
+                {approvals.length === 0 ? (
+                  <div className="p-8 text-center bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] text-[#666A6B]">
+                    <CheckCircle2 className="w-6 h-6 text-[#168F5A] mx-auto mb-2" />
+                    <span>All high-value transactions are approved or within normal bounds.</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {approvals.map((req) => (
+                      <div
+                        key={req.id}
+                        className="p-4 rounded-xl bg-[#F4F1E9] border border-[#DCD8CF] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[#111216]">{req.customer_name}</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold state-tag-risk">
+                              {formatINR(req.amount)}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[#666A6B] font-sans">
+                            {req.evidence_reason || 'High-value recurring invoice requires risk approval before 120m retry.'}
+                          </p>
+                          <span className="text-[10px] text-[#1D4ED8]">
+                            AI Recommendation: {req.ai_recommendation} ({req.ai_confidence}% confidence)
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => handleApprovalDecision(req.id, 'APPROVE')}
+                            disabled={approvingId === req.id}
+                            className="px-3.5 py-1.5 rounded-lg font-semibold text-white bg-[#168F5A] hover:bg-[#117348] transition flex items-center gap-1.5 disabled:opacity-50"
+                          >
+                            {approvingId === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                            <span>Approve</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleApprovalDecision(req.id, 'REJECT')}
+                            disabled={approvingId === req.id}
+                            className="px-3 py-1.5 rounded-lg font-semibold text-[#B91C1C] bg-white hover:bg-[#FEF2F2] border border-[#FECACA] transition"
+                          >
+                            <span>Reject</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* SLIDE 05: VERIFICATION & AUDIT */}
+          {currentSlide === 4 && (
+            <div className="editorial-panel p-6 sm:p-10 bg-white space-y-8">
+              <div className="max-w-2xl space-y-3">
+                <span className="editorial-section-tag text-[#168F5A]">
+                  05 &bull; VERIFICATION &amp; AUDIT &bull; PROVABLE SETTLEMENT
+                </span>
+                <h3 className="editorial-headline text-3xl sm:text-4xl text-[#111216]">
+                  Never claim recovery without authoritative verification.
+                </h3>
+                <p className="text-sm sm:text-base text-[#666A6B] leading-relaxed">
+                  Every transition in ReviveAI leaves a sequential, cryptographically linked record in the compliance ledger. No money movement is marked recovered without provider settlement verification.
+                </p>
+              </div>
+
+              {/* Live Audit Log Search & Table */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <span className="text-[#666A6B] font-bold">Actor:</span>
+                    {['ALL', 'AI_AGENT', 'SYSTEM', 'HUMAN_OPERATOR'].map((act) => (
+                      <button
+                        key={act}
+                        onClick={() => setAuditActorFilter(act)}
+                        className={`px-2.5 py-1 rounded-md text-[11px] transition ${
+                          auditActorFilter === act
+                            ? 'bg-[#111216] text-white font-bold'
+                            : 'bg-[#F4F1E9] text-[#666A6B] hover:text-[#111216]'
+                        }`}
+                      >
+                        {act}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative w-full sm:w-64">
+                    <Search className="w-3.5 h-3.5 text-[#888B8C] absolute left-2.5 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Filter audit events..."
+                      value={auditSearch}
+                      onChange={(e) => setAuditSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 bg-[#F4F1E9] border border-[#DCD8CF] rounded-lg text-xs font-mono"
+                    />
+                  </div>
                 </div>
 
-                <div className="p-3 bg-[#1E293B] rounded-lg border border-[#334155]">
-                  <span className="text-[#94A3B8] text-[10px] block">Certainty Score</span>
-                  <strong className="text-white text-xs block mt-0.5">{customResult.ai_confidence || 88}% High</strong>
-                </div>
-
-                <div className="p-3 bg-[#1E293B] rounded-lg border border-[#334155]">
-                  <span className="text-[#94A3B8] text-[10px] block">Safety Bound</span>
-                  <strong className="text-white text-xs block mt-0.5">
-                    {customResult.amount >= 50000 ? 'Escalated to Operator' : '≤ 2 Retries Permitted'}
-                  </strong>
+                <div className="border border-[#DCD8CF] rounded-xl overflow-hidden font-mono text-xs">
+                  <table className="w-full text-left">
+                    <thead className="bg-[#F4F1E9] text-[#666A6B] text-[10px] uppercase border-b border-[#DCD8CF]">
+                      <tr>
+                        <th className="py-2.5 px-4 font-bold">Timestamp</th>
+                        <th className="py-2.5 px-4 font-bold">Actor</th>
+                        <th className="py-2.5 px-4 font-bold">Event Type</th>
+                        <th className="py-2.5 px-4 font-bold">Decision / Outcome</th>
+                        <th className="py-2.5 px-4 font-bold">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#EDE9E0]">
+                      {filteredAuditLogs.slice(0, 5).map((log) => (
+                        <tr key={log.id} className="hover:bg-[#F4F1E9]/50 transition">
+                          <td className="py-2.5 px-4 text-[#666A6B] text-[11px]">
+                            {formatDateTime(log.timestamp)}
+                          </td>
+                          <td className="py-2.5 px-4 font-semibold text-[#111216]">
+                            {log.actor}
+                          </td>
+                          <td className="py-2.5 px-4">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDE9E0] text-[#111216]">
+                              {log.event_type}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-4 text-[#111216] max-w-xs truncate">
+                            {log.decision} {log.reason ? `(${log.reason})` : ''}
+                          </td>
+                          <td className="py-2.5 px-4">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                log.outcome_status === 'SUCCESS' || log.outcome_status === 'RECOVERED'
+                                  ? 'state-tag-recovered'
+                                  : 'state-tag-neutral'
+                              }`}
+                            >
+                              {log.outcome_status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
           )}
         </div>
+      </section>
 
-        {/* Interactive ROI & Financial Impact Calculator */}
-        <div className="editorial-surface rounded-2xl p-6 sm:p-8 bg-[#FAF8F5] border border-[#E5E1D8] space-y-6">
+      {/* 4. Meaningful Recovery Analytics Section */}
+      <section id="analytics" className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[#DCD8CF] space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D97706]">
-              FINANCIAL IMPACT CALCULATOR
+            <span className="editorial-section-tag text-[#168F5A]">
+              MEASURABLE REVENUE RECOVERY TELEMETRY
             </span>
-            <h3 className="text-xl font-bold tracking-tight text-[#0F172A]">
-              How much revenue could you recover every month?
-            </h3>
-            <p className="text-xs text-[#64748B] font-sans">
-              Based on empirical Indian fintech recovery benchmarks (42.8% average recovery rate).
+            <h2 className="editorial-headline text-3xl sm:text-4xl text-[#111216]">
+              Recovery Analytics
+            </h2>
+            <p className="text-xs sm:text-sm text-[#666A6B]">
+              Calculated from authentic ledger records &bull; Labeled demo baseline
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            {/* Sliders */}
-            <div className="space-y-4 font-mono text-xs">
-              <div>
-                <div className="flex justify-between text-[#475569] mb-1">
-                  <span>Monthly Payment Volume (GMV):</span>
-                  <strong className="text-[#0F172A]">{formatINR(roiVolume)}</strong>
-                </div>
-                <input
-                  type="range"
-                  min="1000000"
-                  max="100000000"
-                  step="500000"
-                  value={roiVolume}
-                  onChange={(e) => setRoiVolume(Number(e.target.value))}
-                  className="w-full accent-[#0F172A] cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-[#94A3B8]">
-                  <span>₹10 Lakhs</span>
-                  <span>₹50 Lakhs</span>
-                  <span>₹10 Crores</span>
-                </div>
-              </div>
+          <button
+            onClick={() => navigate('/journey')}
+            className="px-4 py-2 rounded-lg text-xs font-mono font-medium text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition flex items-center gap-1.5 shadow-xs self-start sm:self-auto"
+          >
+            <span>Full Analytics Suite</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
+        {/* 5 High-Value Metric Panels */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 font-mono text-left">
+          <div className="p-4 bg-white rounded-xl border border-[#DCD8CF] shadow-xs">
+            <span className="text-[10px] uppercase text-[#666A6B] block font-bold">TOTAL FAILED VALUE</span>
+            <span className="text-2xl font-bold text-[#B45309] block mt-0.5 mono-num">
+              {formatINR(atRisk)}
+            </span>
+            <span className="text-[11px] text-[#666A6B] block font-sans">Exposed failure pool</span>
+          </div>
+
+          <div className="p-4 bg-white rounded-xl border border-[#DCD8CF] shadow-xs">
+            <span className="text-[10px] uppercase text-[#168F5A] block font-bold">RECOVERED VALUE</span>
+            <span className="text-2xl font-bold text-[#168F5A] block mt-0.5 mono-num">
+              {formatINR(recovered)}
+            </span>
+            <span className="text-[11px] text-[#168F5A] block font-sans">Settled revenue</span>
+          </div>
+
+          <div className="p-4 bg-white rounded-xl border border-[#DCD8CF] shadow-xs">
+            <span className="text-[10px] uppercase text-[#168F5A] block font-bold">RECOVERY RATE</span>
+            <span className="text-2xl font-bold text-[#168F5A] block mt-0.5 mono-num">
+              {recoveryRate.toFixed(1)}%
+            </span>
+            <span className="text-[11px] text-[#666A6B] block font-sans">Autonomous yield</span>
+          </div>
+
+          <div className="p-4 bg-white rounded-xl border border-[#DCD8CF] shadow-xs">
+            <span className="text-[10px] uppercase text-[#1D4ED8] block font-bold">EST. RECOVERABLE</span>
+            <span className="text-2xl font-bold text-[#1D4ED8] block mt-0.5 mono-num">
+              {formatINR(recoverable)}
+            </span>
+            <span className="text-[11px] text-[#666A6B] block font-sans">Eligible pool</span>
+          </div>
+
+          <div className="p-4 bg-white rounded-xl border border-[#DCD8CF] shadow-xs col-span-2 md:col-span-1">
+            <span className="text-[10px] uppercase text-[#666A6B] block font-bold">ACTIVE WORKFLOWS</span>
+            <span className="text-2xl font-bold text-[#111216] block mt-0.5 mono-num">
+              {activeWfCount}
+            </span>
+            <span className="text-[11px] text-[#666A6B] block font-sans">In guarded execution</span>
+          </div>
+        </div>
+
+        {/* 2 Restrained Editorial Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* 7-Day Revenue Intelligence Chart */}
+          <div className="lg:col-span-7 p-6 bg-white rounded-2xl border border-[#DCD8CF] space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#EDE9E0]">
               <div>
-                <div className="flex justify-between text-[#475569] mb-1">
-                  <span>Payment Failure Rate:</span>
-                  <strong className="text-[#0F172A]">{roiFailureRate}%</strong>
-                </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="35"
-                  step="1"
-                  value={roiFailureRate}
-                  onChange={(e) => setRoiFailureRate(Number(e.target.value))}
-                  className="w-full accent-[#0F172A] cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-[#94A3B8]">
-                  <span>5% (Low)</span>
-                  <span>15% (Average)</span>
-                  <span>35% (High)</span>
-                </div>
+                <span className="editorial-section-tag">
+                  REVENUE INTELLIGENCE TRAJECTORY (7-DAY TREND)
+                </span>
+                <span className="text-[11px] text-[#666A6B] block font-mono">
+                  Daily failure volume vs. settled revenue
+                </span>
+              </div>
+              <span className="text-[10px] font-mono text-[#666A6B] px-2 py-0.5 rounded bg-[#F4F1E9] border border-[#DCD8CF]">
+                Demo data
+              </span>
+            </div>
+
+            <div className="h-60 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={summary?.revenue_trend || [
+                    { date: 'Day 1', at_risk: 180000, recovered: 45000 },
+                    { date: 'Day 2', at_risk: 220000, recovered: 68000 },
+                    { date: 'Day 3', at_risk: 310000, recovered: 92000 },
+                    { date: 'Day 4', at_risk: 390000, recovered: 115000 },
+                    { date: 'Day 5', at_risk: 440000, recovered: 128000 },
+                    { date: 'Day 6', at_risk: 465000, recovered: 142000 },
+                    { date: 'Day 7', at_risk: atRisk, recovered: recovered },
+                  ]}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#168F5A" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#168F5A" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#B45309" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#B45309" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: '#666A6B', fontFamily: 'JetBrains Mono' }}
+                    axisLine={{ stroke: '#DCD8CF' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: '#666A6B', fontFamily: 'JetBrains Mono' }}
+                    axisLine={{ stroke: '#DCD8CF' }}
+                    tickLine={false}
+                    tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#FFFFFF',
+                      borderColor: '#DCD8CF',
+                      borderRadius: '8px',
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: '11px',
+                    }}
+                    formatter={(val: any) => [formatINR(Number(val)), '']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="at_risk"
+                    name="At Risk"
+                    stroke="#B45309"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorRisk)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="recovered"
+                    name="Recovered"
+                    stroke="#168F5A"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#colorRecovered)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Failure Category Distribution */}
+          <div className="lg:col-span-5 p-6 bg-white rounded-2xl border border-[#DCD8CF] space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#EDE9E0]">
+              <div>
+                <span className="editorial-section-tag">
+                  FAILURE CATEGORY EXPOSURE
+                </span>
+                <span className="text-[11px] text-[#666A6B] block font-mono">
+                  Volume breakdown by decline reason
+                </span>
               </div>
             </div>
 
-            {/* Calculations Result Callout */}
-            <div className="p-5 rounded-xl bg-white border border-[#E5E1D8] space-y-3 font-mono shadow-fintech-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-[#F1EFEA]">
-                <span className="text-[10px] uppercase text-[#64748B]">Monthly Exposed Failures:</span>
-                <span className="text-xs font-bold text-[#DC2626]">
-                  {formatINR(roiVolume * (roiFailureRate / 100))}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase font-bold text-[#0F172A]">Recovered Revenue / Month:</span>
-                <span className="text-xl font-extrabold text-[#059669]">
-                  {formatINR(roiVolume * (roiFailureRate / 100) * 0.428)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-[#F1EFEA]">
-                <span className="text-[10px] uppercase text-[#64748B]">Annual Cashflow Boost:</span>
-                <span className="text-sm font-bold text-[#0F172A]">
-                  {formatINR(roiVolume * (roiFailureRate / 100) * 0.428 * 12)} / year
-                </span>
-              </div>
+            <div className="h-60 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={
+                    summary?.risk_categories?.map((c) => ({
+                      name: c.category_key.split('_')[0],
+                      amount: c.amount,
+                    })) || [
+                      { name: 'TEMP', amount: 145000 },
+                      { name: 'CART', amount: 98000 },
+                      { name: 'MANDATE', amount: 125000 },
+                      { name: 'INVOICE', amount: 62000 },
+                      { name: 'TIMEOUT', amount: 52000 },
+                    ]
+                  }
+                  margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 10, fill: '#666A6B', fontFamily: 'JetBrains Mono' }}
+                    axisLine={{ stroke: '#DCD8CF' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: '#666A6B', fontFamily: 'JetBrains Mono' }}
+                    axisLine={{ stroke: '#DCD8CF' }}
+                    tickLine={false}
+                    tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}K`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#FFFFFF',
+                      borderColor: '#DCD8CF',
+                      borderRadius: '8px',
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: '11px',
+                    }}
+                    formatter={(val: any) => [formatINR(Number(val)), 'Volume']}
+                  />
+                  <Bar dataKey="amount" fill="#111216" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 8. Final Call to Action */}
-      <section className="max-w-4xl mx-auto px-6 sm:px-12 py-24 text-center space-y-6 border-t border-[#E5E1D8]">
-        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#64748B]">
-          AUTONOMOUS REVENUE OPERATIONS FOR MERCHANTS
-        </span>
+      {/* 5. Audit & Trust Statement */}
+      <section id="audit-trust" className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[#DCD8CF]">
+        <div className="p-8 sm:p-12 rounded-3xl bg-[#111216] text-white space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#168F5A] border border-white/15 text-xs font-mono font-bold">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>SOVEREIGN FINANCIAL INTELLIGENCE</span>
+          </div>
 
-        <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#0F172A] leading-tight">
-          See where your revenue <br />
-          <span className="text-[#059669]">could be recovered.</span>
-        </h2>
+          <h2 className="editorial-headline text-3xl sm:text-5xl text-white max-w-3xl leading-tight">
+            Built for enterprise fintech trust. No blind retries. No double debits.
+          </h2>
 
-        <p className="text-sm text-[#64748B] max-w-xl mx-auto leading-relaxed font-sans">
-          Enter the ReviveAI workspace and explore the complete recovery lifecycle across your merchant payment rails.
-        </p>
+          <p className="text-sm sm:text-base text-[#A5A096] max-w-2xl leading-relaxed">
+            Every recovery strategy is bound by deterministic invariants, authenticated actor signatures, and authoritative settlement responses. Explore the open console to inspect live state.
+          </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-4 font-mono">
-          <button
-            onClick={() => navigate('/journey')}
-            className="group px-7 py-3.5 rounded-xl text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] transition flex items-center gap-2 shadow-fintech-md"
-          >
-            <span>Launch Command Center</span>
-            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-          </button>
+          <div className="flex flex-wrap items-center gap-4 pt-4 font-mono text-xs">
+            <button
+              onClick={() => navigate('/journey')}
+              className="px-6 py-3 rounded-xl font-semibold text-[#111216] bg-white hover:bg-[#EDE9E0] transition flex items-center gap-2 shadow-xs"
+            >
+              <span>Launch Command Center</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
 
-          <button
-            onClick={() => navigate('/simulation')}
-            className="px-6 py-3.5 rounded-xl text-xs font-semibold text-[#0F172A] bg-white hover:bg-[#FAF8F5] border border-[#DDD8CC] transition shadow-fintech-xs"
-          >
-            Open Simulation Lab
-          </button>
+            <button
+              onClick={() => navigate('/simulation')}
+              className="px-5 py-3 rounded-xl font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/20 transition flex items-center gap-2"
+            >
+              <Zap className="w-3.5 h-3.5 text-[#168F5A]" />
+              <span>Open Simulation Lab</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* 9. Minimal Footer */}
-      <footer className="border-t border-[#E5E1D8] bg-[#FAF8F5] py-10 px-6 sm:px-12 text-xs font-mono text-[#64748B]">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <BrandLogo size="sm" subtitleText="AUTONOMOUS REVENUE RECOVERY • ENTERPRISE PRODUCTION SUITE" />
+      {/* 6. Editorial Footer */}
+      <footer className="border-t border-[#DCD8CF] bg-[#F4F1E9] py-12 px-6 sm:px-12">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 font-mono text-xs text-[#666A6B]">
+          <div className="space-y-1">
+            <BrandLogo size="xs" subtitleText="FINANCIAL RECONCILIATION LAYER" />
+            <p className="text-[11px] text-[#888B8C]">
+              Autonomous revenue-recovery agent for merchant payment streams.
+            </p>
+          </div>
 
-          <div className="flex items-center gap-6 text-xs">
-            <button onClick={() => navigate('/journey')} className="hover:text-[#0F172A] transition">
-              Command Center
-            </button>
-            <button onClick={() => navigate('/simulation')} className="hover:text-[#0F172A] transition">
-              Simulation Lab
-            </button>
-            <button onClick={() => navigate('/approvals')} className="hover:text-[#0F172A] transition">
-              Approvals
-            </button>
-            <button onClick={() => navigate('/audit')} className="hover:text-[#0F172A] transition">
-              Audit Trail
-            </button>
+          <div className="flex items-center gap-6 text-[11px]">
+            <a href="#product" className="hover:text-[#111216]">Product</a>
+            <a href="#how-it-works" className="hover:text-[#111216]">How it works</a>
+            <a href="#analytics" className="hover:text-[#111216]">Analytics</a>
+            <button onClick={() => navigate('/audit')} className="hover:text-[#111216]">Audit Ledger</button>
+            <button onClick={() => navigate('/approvals')} className="hover:text-[#111216]">Approvals</button>
+          </div>
+
+          <div className="text-[11px] text-[#888B8C]">
+            &copy; {new Date().getFullYear()} ReviveAI &bull; MIT License
           </div>
         </div>
       </footer>

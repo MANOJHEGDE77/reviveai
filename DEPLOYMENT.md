@@ -16,7 +16,38 @@ ReviveAI is built for high-performance cloud deployment. The frontend and backen
 
 ---
 
-## ⚡ Option 1: Vercel (Frontend) + Render/Railway (Backend) [Recommended]
+## ⚡ Option 1: 1-Click Vercel Fullstack Serverless (Turnkey)
+
+ReviveAI is fully equipped for 1-click deployment directly on Vercel with both the Vite React frontend and serverless Python FastAPI backend running together via `api/index.py` and `vercel.json`.
+
+### Option 1A: Via Vercel Web Dashboard (Recommended)
+1. Push this repository to your GitHub account (`git push origin main`).
+2. Go to [vercel.com/new](https://vercel.com/new) and import your repository.
+3. Keep default settings:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `./` (leave default)
+   - **Build Command**: `cd frontend && npm install && npm run build`
+   - **Output Directory**: `frontend/dist`
+4. *(Optional)* Add Environment Variables in Vercel:
+   - `GEMINI_API_KEY`: *(Optional: for dynamic Gemini LLM structured reasoning)*
+   - `DATABASE_URL`: *(Optional: if you wish to connect Neon / Supabase PostgreSQL instead of the auto-seeded SQLite in `/tmp`)*
+5. Click **Deploy**. Your entire frontend and `/api` backend endpoints will be live immediately!
+
+### Option 1B: Via Vercel CLI
+If you prefer deploying from your terminal:
+```bash
+# 1. Login to Vercel (first time only)
+npx vercel login
+
+# 2. Deploy to preview or production
+npx vercel --prod
+```
+
+---
+
+## ⚡ Option 2: Vercel (Frontend) + Render/Railway (Backend)
+
+For high-throughput persistent production instances, you can decouple frontend on Vercel and backend on Render/Railway:
 
 ### Step 1: Deploy Backend to Render or Railway
 

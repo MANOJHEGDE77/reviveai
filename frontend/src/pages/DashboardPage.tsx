@@ -64,7 +64,7 @@ export const DashboardPage: React.FC = () => {
 
   const handleDismiss = () => {
     setDismissOnboarding(true);
-    localStorage.setItem('reviveai_dismiss_onboarding', 'true');
+    localStorage.setItem('reviveai_onboarding_dismissed', 'true');
   };
 
   if (loading && !summary) {
@@ -96,78 +96,78 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
       {/* 0. First-time User Experience Banner (Dismissible) */}
       {!dismissOnboarding && (
-        <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#DDD8CC] relative space-y-3 shadow-fintech-xs">
+        <div className="p-5 rounded-2xl bg-white border border-[#DCD8CF] relative space-y-3 shadow-xs">
           <button
             onClick={handleDismiss}
-            className="absolute top-4 right-4 text-[#94A3B8] hover:text-[#0F172A] transition"
+            className="absolute top-4 right-4 text-[#888B8C] hover:text-[#111216] transition"
             title="Dismiss orientation"
           >
             <X className="w-4 h-4" />
           </button>
           <div>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#D97706]" />
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#666A6B] flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-[#168F5A]" />
               WELCOME TO REVIVEAI COMMAND CENTER
             </span>
-            <h2 className="text-base font-bold text-[#0F172A] mt-0.5">
+            <h2 className="text-base font-bold text-[#111216] mt-0.5">
               Autonomous AI Revenue Recovery Engine
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5 max-w-2xl font-sans leading-relaxed">
+            <p className="text-xs text-[#666A6B] mt-0.5 max-w-2xl font-sans leading-relaxed">
               ReviveAI monitors failed payment streams in real-time, diagnoses root causes, executes bounded recoveries, and logs deterministic audit trails.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono text-[#334155]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono text-[#111216]">
             <div
               onClick={() => navigate('/investigations')}
-              className="p-3 bg-white rounded-xl border border-[#E5E1D8] hover:border-[#0F172A] transition cursor-pointer group"
+              className="p-3 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] hover:border-[#111216] transition cursor-pointer group"
             >
-              <strong className="block text-[#0F172A] group-hover:text-[#2563EB] flex items-center justify-between">
+              <strong className="block text-[#111216] group-hover:text-[#1D4ED8] flex items-center justify-between">
                 1. Review At-Risk
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#94A3B8]" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#888B8C]" />
               </strong>
-              <span className="text-[11px] text-[#64748B] font-sans">Inspect decline events &amp; drop-offs</span>
+              <span className="text-[11px] text-[#666A6B] font-sans">Inspect decline events &amp; drop-offs</span>
             </div>
             <div
               onClick={() => navigate('/recovery')}
-              className="p-3 bg-white rounded-xl border border-[#E5E1D8] hover:border-[#0F172A] transition cursor-pointer group"
+              className="p-3 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] hover:border-[#111216] transition cursor-pointer group"
             >
-              <strong className="block text-[#0F172A] group-hover:text-[#059669] flex items-center justify-between">
+              <strong className="block text-[#111216] group-hover:text-[#168F5A] flex items-center justify-between">
                 2. Autonomous Loops
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#94A3B8]" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#888B8C]" />
               </strong>
-              <span className="text-[11px] text-[#64748B] font-sans">Bounded retries &amp; smart failovers</span>
+              <span className="text-[11px] text-[#666A6B] font-sans">Bounded retries &amp; smart failovers</span>
             </div>
             <div
               onClick={() => navigate('/approvals')}
-              className="p-3 bg-white rounded-xl border border-[#E5E1D8] hover:border-[#0F172A] transition cursor-pointer group"
+              className="p-3 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] hover:border-[#111216] transition cursor-pointer group"
             >
-              <strong className="block text-[#0F172A] group-hover:text-[#D97706] flex items-center justify-between">
+              <strong className="block text-[#111216] group-hover:text-[#B45309] flex items-center justify-between">
                 3. High-Value Approvals
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#94A3B8]" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#888B8C]" />
               </strong>
-              <span className="text-[11px] text-[#64748B] font-sans">Human sign-off on &ge; ₹50,000 txns</span>
+              <span className="text-[11px] text-[#666A6B] font-sans">Human sign-off on &ge; ₹50,000 txns</span>
             </div>
           </div>
         </div>
       )}
 
       {/* Page Header with Single Clear Primary CTA */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#E5E1D8]">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#DCD8CF]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B]">
               01 &bull; COMMAND CENTER
             </span>
-            <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-mono font-medium text-[#475569]">
+            <span className="text-[#C8C3B7]">&bull;</span>
+            <span className="text-xs font-mono font-medium text-[#666A6B]">
               Live Revenue Operations
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111216] mt-1">
             Today's Revenue Journey
           </h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs text-[#666A6B] mt-0.5">
             Real-time financial telemetry and autonomous recovery across all merchant payment rails.
           </p>
         </div>
@@ -176,23 +176,23 @@ export const DashboardPage: React.FC = () => {
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
             onClick={() => setCustomModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-xs transition group"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#111216] hover:bg-[#23262D] shadow-xs transition group"
           >
-            <InjectIncidentIcon className="w-3.5 h-3.5" />
+            <InjectIncidentIcon className="w-3.5 h-3.5 text-[#168F5A]" />
             <span>+ Ingest Incident</span>
           </button>
 
           <button
             onClick={() => fetchSummary(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#475569] hover:text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#666A6B] hover:text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition shadow-xs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-[#059669]' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-[#168F5A]' : ''}`} />
             <span>Sync</span>
           </button>
 
           <button
             onClick={() => navigate('/investigations')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono font-medium text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-mono font-medium text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition shadow-xs"
           >
             <span>Review At-Risk</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -204,66 +204,66 @@ export const DashboardPage: React.FC = () => {
       <section className="space-y-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
           {/* 1. At Risk */}
-          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 hover:border-[#CEC8BB] transition">
+          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 hover:border-[#C8C3B7] transition">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase text-[#64748B] font-bold tracking-wider">Revenue At Risk</span>
+              <span className="text-[10px] uppercase text-[#666A6B] font-bold tracking-wider">Revenue At Risk</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full state-tag-failed font-bold">
                 Exposed
               </span>
             </div>
-            <span className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] block tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#111216] block tracking-tight mono-num">
               {formatINR(atRisk)}
             </span>
-            <p className="text-[11px] text-[#64748B] font-sans">
+            <p className="text-[11px] text-[#666A6B] font-sans">
               {summary?.failed_incidents_count || 183} payment failure events
             </p>
           </div>
 
           {/* 2. Estimated Recoverable */}
-          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 hover:border-[#CEC8BB] transition">
+          <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 hover:border-[#C8C3B7] transition">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase text-[#64748B] font-bold tracking-wider">Recoverable</span>
+              <span className="text-[10px] uppercase text-[#666A6B] font-bold tracking-wider">Recoverable</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full state-tag-investigating font-bold">
                 AI Strategy
               </span>
             </div>
-            <span className="text-2xl sm:text-3xl font-extrabold text-[#1E40AF] block tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#1D4ED8] block tracking-tight mono-num">
               {formatINR(recoverable)}
             </span>
-            <p className="text-[11px] text-[#1E40AF] font-sans">
+            <p className="text-[11px] text-[#1D4ED8] font-sans">
               High-probability yield projection
             </p>
           </div>
 
           {/* 3. Successfully Recovered */}
-          <div className="editorial-surface rounded-2xl p-5 bg-[#ECFDF5]/50 border-[#A7F3D0] space-y-2 hover:border-[#6EE7B7] transition">
+          <div className="editorial-surface rounded-2xl p-5 bg-white border-[#B9E2CD] space-y-2 hover:border-[#168F5A] transition">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase text-[#065F46] font-bold tracking-wider">Recovered Funds</span>
+              <span className="text-[10px] uppercase text-[#168F5A] font-bold tracking-wider">Recovered Funds</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full state-tag-recovered font-bold">
                 Settled
               </span>
             </div>
-            <span className="text-2xl sm:text-3xl font-extrabold text-[#059669] block tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#168F5A] block tracking-tight mono-num">
               {formatINR(recovered)}
             </span>
-            <p className="text-[11px] text-[#065F46] font-sans">
+            <p className="text-[11px] text-[#168F5A] font-sans">
               Auto-credited to merchant account
             </p>
           </div>
 
           {/* 4. Recovery Yield Rate */}
-          <div className="editorial-surface rounded-2xl p-5 bg-[#ECFDF5]/50 border-[#A7F3D0] space-y-2 hover:border-[#6EE7B7] transition">
+          <div className="editorial-surface rounded-2xl p-5 bg-white border-[#B9E2CD] space-y-2 hover:border-[#168F5A] transition">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase text-[#065F46] font-bold tracking-wider">Recovery Yield</span>
-              <span className="text-[10px] text-[#059669] font-bold flex items-center gap-0.5">
+              <span className="text-[10px] uppercase text-[#168F5A] font-bold tracking-wider">Recovery Yield</span>
+              <span className="text-[10px] text-[#168F5A] font-bold flex items-center gap-0.5">
                 <TrendingUp className="w-3 h-3" />
                 +6.2%
               </span>
             </div>
-            <span className="text-2xl sm:text-3xl font-extrabold text-[#059669] block tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#168F5A] block tracking-tight mono-num">
               {recoveryRate.toFixed(1)}%
             </span>
-            <p className="text-[11px] text-[#065F46] font-sans">
+            <p className="text-[11px] text-[#168F5A] font-sans">
               {recoveredCount} closed-loop transactions
             </p>
           </div>
@@ -272,13 +272,13 @@ export const DashboardPage: React.FC = () => {
 
       {/* SECTION 2 — RECHARTS 7-DAY REVENUE INTELLIGENCE TREND */}
       <section className="editorial-surface rounded-2xl p-6 sm:p-7 bg-white space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#EAE6DD]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#EDE9E0]">
           <div>
-            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5 text-[#2563EB]" />
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B] flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-[#168F5A]" />
               REVENUE RECOVERY TELEMETRY &bull; 7-DAY TRAJECTORY
             </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#666A6B] mt-0.5">
               Historical view of at-risk revenue detected versus successfully recovered funds
             </p>
           </div>
@@ -290,8 +290,8 @@ export const DashboardPage: React.FC = () => {
                 onClick={() => setTimeRange(period)}
                 className={`px-3 py-1 rounded-md transition ${
                   timeRange === period
-                    ? 'bg-[#0F172A] text-white font-bold'
-                    : 'bg-[#FAF8F5] text-[#64748B] hover:text-[#0F172A] border border-[#DDD8CC]'
+                    ? 'bg-[#111216] text-white font-bold'
+                    : 'bg-[#F4F1E9] text-[#666A6B] hover:text-[#111216] border border-[#DCD8CF]'
                 }`}
               >
                 {period}
@@ -306,23 +306,23 @@ export const DashboardPage: React.FC = () => {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#B45309" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#B45309" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#168F5A" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#168F5A" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <XAxis
                 dataKey="date"
-                stroke="#94A3B8"
+                stroke="#888B8C"
                 fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: '#E5E1D8' }}
+                axisLine={{ stroke: '#DCD8CF' }}
               />
               <YAxis
-                stroke="#94A3B8"
+                stroke="#888B8C"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
@@ -332,13 +332,13 @@ export const DashboardPage: React.FC = () => {
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-[#0F172A] text-white p-3 rounded-xl shadow-fintech-lg border border-[#334155] text-xs font-mono space-y-1">
-                        <p className="text-[#94A3B8] font-bold border-b border-[#334155] pb-1">{label}</p>
+                      <div className="bg-[#111216] text-white p-3 rounded-xl shadow-editorial-panel border border-[#2E3138] text-xs font-mono space-y-1">
+                        <p className="text-[#888B8C] font-bold border-b border-[#2E3138] pb-1">{label}</p>
                         <p className="text-[#F59E0B] flex justify-between gap-4">
                           <span>At Risk:</span>
                           <strong>{formatINR(Number(payload[0]?.value) || 0)}</strong>
                         </p>
-                        <p className="text-[#34D399] flex justify-between gap-4">
+                        <p className="text-[#168F5A] flex justify-between gap-4">
                           <span>Recovered:</span>
                           <strong>{formatINR(Number(payload[1]?.value) || 0)}</strong>
                         </p>
@@ -352,7 +352,7 @@ export const DashboardPage: React.FC = () => {
                 type="monotone"
                 dataKey="at_risk"
                 name="At Risk"
-                stroke="#D97706"
+                stroke="#B45309"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorRisk)"
@@ -361,7 +361,7 @@ export const DashboardPage: React.FC = () => {
                 type="monotone"
                 dataKey="recovered"
                 name="Recovered"
-                stroke="#059669"
+                stroke="#168F5A"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorRecovered)"
@@ -370,13 +370,13 @@ export const DashboardPage: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="flex items-center justify-center gap-6 pt-2 border-t border-[#EAE6DD] text-xs font-mono text-[#64748B]">
+        <div className="flex items-center justify-center gap-6 pt-2 border-t border-[#EDE9E0] text-xs font-mono text-[#666A6B]">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[#F59E0B]" />
+            <span className="w-3 h-3 rounded-full bg-[#B45309]" />
             <span>Revenue at Risk</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[#10B981]" />
+            <span className="w-3 h-3 rounded-full bg-[#168F5A]" />
             <span>Recovered Funds (Settled)</span>
           </div>
         </div>
@@ -384,16 +384,16 @@ export const DashboardPage: React.FC = () => {
 
       {/* SECTION 3 — REVENUE RISK MAP (FAILURE CATEGORIES BREAKDOWN) */}
       <section className="editorial-surface rounded-2xl p-6 sm:p-7 bg-white space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#EAE6DD]">
+        <div className="flex items-center justify-between pb-3 border-b border-[#EDE9E0]">
           <div>
-            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B]">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B]">
               REVENUE RISK DISTRIBUTION &bull; ROOT CAUSE VECTORS
             </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#666A6B] mt-0.5">
               Active exposure categorized by failure signature and historical recovery yield
             </p>
           </div>
-          <span className="text-xs font-mono text-[#64748B]">
+          <span className="text-xs font-mono text-[#666A6B]">
             {riskCategories.length} Failure Categories Active
           </span>
         </div>
@@ -403,10 +403,10 @@ export const DashboardPage: React.FC = () => {
             <div
               key={idx}
               onClick={() => navigate(`/investigations?tab=${cat.category_key}`)}
-              className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] hover:border-[#0F172A] hover:bg-white transition cursor-pointer space-y-2 group"
+              className="p-4 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] hover:border-[#111216] hover:bg-white transition cursor-pointer space-y-2 group"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#0F172A] group-hover:text-[#2563EB] transition">
+                <span className="text-xs font-bold text-[#111216] group-hover:text-[#168F5A] transition">
                   {cat.label}
                 </span>
                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${
@@ -417,19 +417,19 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               <div className="flex items-baseline justify-between">
-                <span className="text-lg font-bold text-[#0F172A]">{formatINR(cat.amount)}</span>
-                <span className="text-[11px] text-[#059669] font-bold">{(cat.recovery_probability * 100).toFixed(0)}% Yield</span>
+                <span className="text-lg font-bold text-[#111216] mono-num">{formatINR(cat.amount)}</span>
+                <span className="text-[11px] text-[#168F5A] font-bold">{(cat.recovery_probability * 100).toFixed(0)}% Yield</span>
               </div>
 
               {/* Progress Bar */}
-              <div className="h-1.5 w-full bg-[#E2E8F0] rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-[#EDE9E0] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#0F172A] rounded-full"
+                  className="h-full bg-[#111216] rounded-full"
                   style={{ width: `${Math.min(100, (cat.amount / 150000) * 100)}%` }}
                 />
               </div>
 
-              <div className="flex justify-between text-[10px] text-[#64748B] pt-0.5">
+              <div className="flex justify-between text-[10px] text-[#666A6B] pt-0.5">
                 <span>{cat.affected_customers} payments</span>
                 <span>{cat.trend}</span>
               </div>
@@ -480,7 +480,7 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => navigate(pendingApprovals > 0 ? '/approvals' : '/investigations')}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-mono font-semibold text-[#0F172A] bg-[#F1EFEA] hover:bg-[#EAE5DA] border border-[#DDD8CC] transition flex items-center justify-center gap-1.5"
+            className="w-full py-2.5 px-4 rounded-xl text-xs font-mono font-semibold text-[#111216] bg-[#F4F1E9] hover:bg-[#EDE9E0] border border-[#DCD8CF] transition flex items-center justify-center gap-1.5"
           >
             <span>{pendingApprovals > 0 ? 'Review Pending Approvals' : 'Review At-Risk Incidents'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -490,21 +490,21 @@ export const DashboardPage: React.FC = () => {
         {/* WHAT IS REVIVEAI DOING? */}
         <section className="editorial-surface rounded-2xl p-6 bg-white flex flex-col justify-between space-y-4">
           <div className="space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-[#EAE6DD]">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#EDE9E0]">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B]">
                 AUTONOMOUS ENGINE STATUS
               </span>
-              <span className="text-xs font-mono font-bold text-[#1E40AF] flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse" />
+              <span className="text-xs font-mono font-bold text-[#1D4ED8] flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#1D4ED8] animate-pulse" />
                 {activeWfCount} Active Loops
               </span>
             </div>
 
             <div className="p-4 bg-[#EFF6FF] rounded-xl border border-[#BFDBFE] space-y-1">
-              <strong className="text-xs font-bold text-[#1E40AF] block font-mono">
+              <strong className="text-xs font-bold text-[#1D4ED8] block font-mono">
                 {activeWfCount} recovery workflows executing
               </strong>
-              <p className="text-xs text-[#1E40AF] font-sans leading-relaxed">
+              <p className="text-xs text-[#1D4ED8] font-sans leading-relaxed">
                 <strong>{formatINR(recoverable)}</strong> scheduled across delayed retry cooldowns, multi-rail PSP reroutes, and 1-click cart recovery links.
               </p>
             </div>
@@ -512,7 +512,7 @@ export const DashboardPage: React.FC = () => {
 
           <button
             onClick={() => navigate('/recovery')}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-mono font-semibold text-[#0F172A] bg-[#F1EFEA] hover:bg-[#EAE5DA] border border-[#DDD8CC] transition flex items-center justify-center gap-1.5"
+            className="w-full py-2.5 px-4 rounded-xl text-xs font-mono font-semibold text-[#111216] bg-[#F4F1E9] hover:bg-[#EDE9E0] border border-[#DCD8CF] transition flex items-center justify-center gap-1.5"
           >
             <span>View Active Recovery Workflows</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -522,18 +522,18 @@ export const DashboardPage: React.FC = () => {
 
       {/* SECTION 6 — RECENT OUTCOMES FEED */}
       <section className="editorial-surface rounded-2xl p-6 bg-white space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#EAE6DD]">
+        <div className="flex items-center justify-between pb-3 border-b border-[#EDE9E0]">
           <div>
-            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B]">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B]">
               VERIFIED REVENUE SETTLEMENTS &bull; RECENT OUTCOMES
             </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#666A6B] mt-0.5">
               Verified funds recovered and settled into merchant settlement ledger
             </p>
           </div>
           <button
             onClick={() => navigate('/audit')}
-            className="text-xs font-mono font-semibold text-[#059669] hover:underline flex items-center gap-1"
+            className="text-xs font-mono font-semibold text-[#168F5A] hover:underline flex items-center gap-1"
           >
             <span>Full Audit Trail</span>
             <ArrowRight className="w-3 h-3" />
@@ -541,28 +541,28 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
-          <div className="p-3.5 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] space-y-1">
+          <div className="p-3.5 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#059669]">₹24,900.00 Recovered</span>
-              <span className="text-[10px] text-[#94A3B8]">24m ago</span>
+              <span className="font-bold text-[#168F5A]">₹24,900.00 Recovered</span>
+              <span className="text-[10px] text-[#888B8C]">24m ago</span>
             </div>
-            <p className="text-[11px] text-[#475569] font-sans">Swiggy Cloud Kitchen &bull; Delayed Retry</p>
+            <p className="text-[11px] text-[#666A6B] font-sans">Swiggy Cloud Kitchen &bull; Delayed Retry</p>
           </div>
 
-          <div className="p-3.5 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] space-y-1">
+          <div className="p-3.5 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#059669]">₹12,500.00 Recovered</span>
-              <span className="text-[10px] text-[#94A3B8]">1h ago</span>
+              <span className="font-bold text-[#168F5A]">₹12,500.00 Recovered</span>
+              <span className="text-[10px] text-[#888B8C]">1h ago</span>
             </div>
-            <p className="text-[11px] text-[#475569] font-sans">Zepto DarkStore &bull; Multi-Rail Switch</p>
+            <p className="text-[11px] text-[#666A6B] font-sans">Zepto DarkStore &bull; Multi-Rail Switch</p>
           </div>
 
-          <div className="p-3.5 bg-[#FAF8F5] rounded-xl border border-[#E5E1D8] space-y-1">
+          <div className="p-3.5 bg-[#F4F1E9] rounded-xl border border-[#DCD8CF] space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#059669]">₹8,900.00 Recovered</span>
-              <span className="text-[10px] text-[#94A3B8]">3h ago</span>
+              <span className="font-bold text-[#168F5A]">₹8,900.00 Recovered</span>
+              <span className="text-[10px] text-[#888B8C]">3h ago</span>
             </div>
-            <p className="text-[11px] text-[#475569] font-sans">BharatMart D2C &bull; 1-Click Link</p>
+            <p className="text-[11px] text-[#666A6B] font-sans">BharatMart D2C &bull; 1-Click Link</p>
           </div>
         </div>
       </section>

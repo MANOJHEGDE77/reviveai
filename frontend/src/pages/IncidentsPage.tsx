@@ -119,21 +119,21 @@ export const IncidentsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* 1. Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#E5E1D8]">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#DCD8CF]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#64748B]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#666A6B]">
               02 &bull; FORENSIC INVESTIGATIONS
             </span>
-            <span className="text-[#C5C0B3]">&bull;</span>
-            <span className="text-xs font-mono font-medium text-[#475569]">
+            <span className="text-[#C8C3B7]">&bull;</span>
+            <span className="text-xs font-mono font-medium text-[#666A6B]">
               Incident Triage
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111216] mt-1">
             Revenue Investigations
           </h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs text-[#666A6B] mt-0.5">
             {incidents.length} payment failure incidents identified for root-cause diagnosis and autonomous recovery.
           </p>
         </div>
@@ -141,17 +141,17 @@ export const IncidentsPage: React.FC = () => {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={() => setCustomModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-xs transition group"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#111216] hover:bg-[#23262D] shadow-xs transition group"
           >
-            <InjectIncidentIcon className="w-3.5 h-3.5" />
+            <InjectIncidentIcon className="w-3.5 h-3.5 text-[#168F5A]" />
             <span>+ Ingest Incident</span>
           </button>
 
           <button
             onClick={fetchIncidents}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#475569] hover:text-[#0F172A] bg-white hover:bg-[#F1EFEA] border border-[#DDD8CC] transition shadow-fintech-xs"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium text-[#666A6B] hover:text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition shadow-xs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#059669]' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#168F5A]' : ''}`} />
             <span>Refresh</span>
           </button>
         </div>
@@ -167,8 +167,8 @@ export const IncidentsPage: React.FC = () => {
               onClick={() => handleTabChange(tab.key)}
               className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
                 filterTab === tab.key
-                  ? 'bg-[#0F172A] text-white font-bold shadow-fintech-xs'
-                  : 'bg-white text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1EFEA] border border-[#DDD8CC]'
+                  ? 'bg-[#111216] text-white font-bold shadow-xs'
+                  : 'bg-white text-[#666A6B] hover:text-[#111216] hover:bg-[#EDE9E0] border border-[#DCD8CF]'
               }`}
             >
               {tab.label}
@@ -178,18 +178,18 @@ export const IncidentsPage: React.FC = () => {
 
         {/* Search Input */}
         <div className="relative max-w-xs w-full">
-          <Search className="w-3.5 h-3.5 text-[#94A3B8] absolute left-3 top-2.5" />
+          <Search className="w-3.5 h-3.5 text-[#888B8C] absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search by customer, ref, reason..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-8 py-1.5 bg-white border border-[#DDD8CC] rounded-lg text-xs font-mono text-[#0F172A] focus:outline-hidden focus:border-[#0F172A] placeholder:text-[#94A3B8]"
+            className="w-full pl-8 pr-8 py-1.5 bg-white border border-[#DCD8CF] rounded-lg text-xs font-mono text-[#111216] focus:outline-hidden focus:border-[#111216] placeholder:text-[#888B8C]"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-2 text-[#94A3B8] hover:text-[#0F172A]"
+              className="absolute right-2.5 top-2 text-[#888B8C] hover:text-[#111216]"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -199,20 +199,20 @@ export const IncidentsPage: React.FC = () => {
 
       {/* 3. Incidents List & Empty State */}
       {loading ? (
-        <div className="editorial-surface rounded-2xl p-12 text-center text-[#64748B] font-mono text-xs space-y-2">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#0F172A]" />
+        <div className="editorial-surface rounded-2xl p-12 text-center text-[#666A6B] font-mono text-xs space-y-2">
+          <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#111216]" />
           <p>Analyzing telemetry and payment events...</p>
         </div>
       ) : incidents.length === 0 ? (
         <div className="editorial-surface rounded-2xl p-16 text-center bg-white space-y-3">
-          <Inbox className="w-10 h-10 mx-auto text-[#94A3B8]" />
-          <h3 className="text-sm font-bold text-[#0F172A]">No at-risk payments</h3>
-          <p className="text-xs text-[#64748B] max-w-md mx-auto font-sans">
+          <Inbox className="w-10 h-10 mx-auto text-[#888B8C]" />
+          <h3 className="text-sm font-bold text-[#111216]">No at-risk payments</h3>
+          <p className="text-xs text-[#666A6B] max-w-md mx-auto font-sans">
             Your revenue streams are currently healthy with zero unresolved failure incidents matching this filter query.
           </p>
         </div>
       ) : (
-        <div className="editorial-surface rounded-2xl bg-white overflow-hidden divide-y divide-[#EAE6DD] shadow-fintech-xs">
+        <div className="editorial-surface rounded-2xl bg-white overflow-hidden divide-y divide-[#EDE9E0] shadow-xs">
           {incidents.map((incident) => {
             const badge = getStatusBadge(incident.status);
             const isInvestigating = investigatingId === incident.id;

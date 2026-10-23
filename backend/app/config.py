@@ -4,7 +4,8 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
-_DEFAULT_DB_PATH = (_BACKEND_DIR / "reviveai.db").as_posix()
+_IS_VERCEL = bool(os.getenv("VERCEL") or os.getenv("VERCEL_ENV"))
+_DEFAULT_DB_PATH = "/tmp/reviveai.db" if _IS_VERCEL else (_BACKEND_DIR / "reviveai.db").as_posix()
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "ReviveAI - Autonomous Revenue Recovery Platform"

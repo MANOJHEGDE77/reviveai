@@ -60,27 +60,27 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white border border-[#E5E1D8] rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-fintech-xl space-y-5 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#111216]/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-[#F4F1E9] border border-[#DCD8CF] rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-editorial-float space-y-5 relative">
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-xl text-[#94A3B8] hover:text-[#0F172A] hover:bg-[#F1EFEA] transition"
+          className="absolute top-6 right-6 p-2 rounded-xl text-[#666A6B] hover:text-[#111216] hover:bg-white transition"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="pb-3 border-b border-[#EAE6DD] flex items-start gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#FFFBEB] to-[#FEF3C7] border border-[#FDE68A] shadow-fintech-xs shrink-0">
+        <div className="pb-3 border-b border-[#DCD8CF] flex items-start gap-3">
+          <div className="p-2.5 rounded-xl bg-white border border-[#DCD8CF] shadow-xs shrink-0 text-[#168F5A]">
             <SimulateFailureIcon className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FFFBEB] px-2 py-0.5 rounded border border-[#FDE68A]">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#168F5A] bg-white px-2 py-0.5 rounded border border-[#DCD8CF]">
               SIMULATION LAB &bull; INJECT PAYLOAD
             </span>
-            <h2 className="text-lg font-bold text-[#0F172A] mt-1">
+            <h2 className="text-lg font-bold text-[#111216] mt-1 font-serif">
               Simulate Payment Failure Event
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#666A6B] mt-0.5 font-sans">
               Injects a synthetic payment decline webhook into the live ReviveAI closed-loop pipeline.
             </p>
           </div>
@@ -88,7 +88,7 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
 
         {/* Quick Presets */}
         <div className="space-y-1.5">
-          <span className="text-[10px] font-mono text-[#64748B] uppercase font-bold">1-Click Presets:</span>
+          <span className="text-[10px] font-mono text-[#666A6B] uppercase font-bold tracking-wider">1-Click Presets:</span>
           <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
             {presets.map((p, idx) => (
               <button
@@ -99,7 +99,7 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
                   setAmount(p.amount);
                   setMethod(p.method);
                 }}
-                className="p-2 text-left rounded-lg bg-[#FAF8F5] border border-[#E5E1D8] hover:border-[#0F172A] hover:bg-white transition text-[#334155]"
+                className="p-2 text-left rounded-lg bg-white border border-[#DCD8CF] hover:border-[#111216] transition text-[#111216] font-medium"
               >
                 {p.label}
               </button>
@@ -109,20 +109,20 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
           <div>
-            <label className="text-[#475569] block mb-1 font-bold">Customer / Merchant Name</label>
+            <label className="text-[#111216] block mb-1 font-bold">Customer / Merchant Name</label>
             <input
               type="text"
               required
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#DDD8CC] rounded-lg text-[#0F172A] focus:outline-hidden focus:border-[#0F172A]"
+              className="w-full px-3 py-2 bg-white border border-[#DCD8CF] rounded-lg text-[#111216] focus:outline-hidden focus:border-[#168F5A] transition"
             />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[#475569] font-bold">Transaction Value (INR)</label>
-              <span className="text-xs font-bold text-[#0F172A]">{formatINR(amount)}</span>
+              <label className="text-[#111216] font-bold">Transaction Value (INR)</label>
+              <span className="text-xs font-bold text-[#168F5A]">{formatINR(amount)}</span>
             </div>
             <input
               type="number"
@@ -130,21 +130,21 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
               min={100}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-white border border-[#DDD8CC] rounded-lg text-[#0F172A] focus:outline-hidden focus:border-[#0F172A] font-bold"
+              className="w-full px-3 py-2 bg-white border border-[#DCD8CF] rounded-lg text-[#111216] focus:outline-hidden focus:border-[#168F5A] font-bold transition"
             />
             {amount >= 50000 && (
-              <p className="text-[11px] text-[#D97706] mt-1 font-sans">
+              <p className="text-[11px] text-[#C2410C] mt-1 font-sans font-medium">
                 ⚠ Amount &ge; ₹50,000 mandates Human Approval via /approvals.
               </p>
             )}
           </div>
 
           <div>
-            <label className="text-[#475569] block mb-1 font-bold">Failure Signature Category</label>
+            <label className="text-[#111216] block mb-1 font-bold">Failure Signature Category</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#DDD8CC] rounded-lg text-[#0F172A] focus:outline-hidden focus:border-[#0F172A]"
+              className="w-full px-3 py-2 bg-white border border-[#DCD8CF] rounded-lg text-[#111216] focus:outline-hidden focus:border-[#168F5A] transition"
             >
               <option value="TEMPORARY_DECLINE">TEMPORARY_DECLINE (Bank Switch Throttle)</option>
               <option value="CHECKOUT_ABANDONED">CHECKOUT_ABANDONED (Cart drop-off)</option>
@@ -155,11 +155,11 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
           </div>
 
           <div>
-            <label className="text-[#475569] block mb-1 font-bold">Payment Rail</label>
+            <label className="text-[#111216] block mb-1 font-bold">Payment Rail</label>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-[#DDD8CC] rounded-lg text-[#0F172A] focus:outline-hidden focus:border-[#0F172A]"
+              className="w-full px-3 py-2 bg-white border border-[#DCD8CF] rounded-lg text-[#111216] focus:outline-hidden focus:border-[#168F5A] transition"
             >
               <option value="CARD">Credit/Debit Card (•••• 4821)</option>
               <option value="UPI">UPI Intent (merchant@okhdfc)</option>
@@ -167,18 +167,18 @@ export const SimulationModal: React.FC<SimulationModalProps> = ({
             </select>
           </div>
 
-          <div className="pt-2 flex items-center justify-between border-t border-[#EAE6DD]">
+          <div className="pt-2 flex items-center justify-between border-t border-[#DCD8CF]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-xs font-semibold text-[#64748B] hover:text-[#0F172A] transition"
+              className="px-4 py-2 rounded-lg text-xs font-semibold text-[#666A6B] hover:text-[#111216] transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-50 transition shadow-fintech-sm flex items-center gap-2 group"
+              className="px-5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#111216] hover:bg-[#168F5A] disabled:opacity-50 transition shadow-editorial-card flex items-center gap-2 group"
             >
               {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SimulateFailureIcon className="w-3.5 h-3.5" />}
               <span>Simulate Incident</span>

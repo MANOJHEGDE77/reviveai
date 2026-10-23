@@ -75,17 +75,17 @@ export const Layout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen flex flex-col bg-[#FAF8F5] text-[#0F172A] font-sans selection:bg-[#E2DDD3] selection:text-[#0F172A]">
+    <div className="min-h-screen w-screen flex flex-col bg-[#F4F1E9] text-[#111216] font-sans selection:bg-[#E2DDD3] selection:text-[#111216]">
       {/* 1. Header with 5 Primary Nav Items + Secondary Tools & Config */}
-      <header className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E5E1D8] px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-[#F4F1E9]/95 backdrop-blur-md border-b border-[#DCD8CF] px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
         {/* Left: Brand & Primary 5 Items */}
         <div className="flex items-center gap-6 lg:gap-8">
           <NavLink to="/" className="shrink-0 transition hover:opacity-90">
-            <BrandLogo size="sm" subtitleText="AUTONOMOUS V2.0" />
+            <BrandLogo size="sm" subtitleText="AUTONOMOUS REVENUE RECOVERY" />
           </NavLink>
 
           {/* 5 Primary Navigation Items */}
-          <nav className="hidden md:flex items-center gap-1 text-xs font-medium font-mono">
+          <nav className="hidden md:flex items-center gap-1.5 text-xs font-medium font-mono">
             {primaryNav.map((item) => {
               const isActive =
                 item.to === '/journey'
@@ -96,10 +96,10 @@ export const Layout: React.FC = () => {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={`px-3 py-1.5 rounded-md transition-all duration-150 ${
+                  className={`px-3 py-1.5 rounded-lg transition-all duration-150 ${
                     isActive
-                      ? 'bg-[#EAE5DA] text-[#0F172A] font-bold shadow-xs'
-                      : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1EFEA]'
+                      ? 'bg-white text-[#111216] font-bold border border-[#DCD8CF] shadow-xs'
+                      : 'text-[#666A6B] hover:text-[#111216] hover:bg-[#EDE9E0]'
                   }`}
                 >
                   {item.label}
@@ -111,15 +111,15 @@ export const Layout: React.FC = () => {
 
         {/* Center: Global Search */}
         <form onSubmit={handleGlobalSearch} className="hidden lg:flex items-center flex-1 max-w-xs relative">
-          <Search className="w-3.5 h-3.5 text-[#94A3B8] absolute left-3 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-[#888B8C] absolute left-3 pointer-events-none" />
           <input
             type="text"
             placeholder="Search payments, customers, reasons..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-8 py-1.5 bg-white border border-[#DDD8CC] hover:border-[#CEC8BB] focus:border-[#0F172A] focus:outline-hidden rounded-lg text-xs font-mono text-[#0F172A] transition placeholder:text-[#94A3B8]"
+            className="w-full pl-8 pr-8 py-1.5 bg-white border border-[#DCD8CF] hover:border-[#B4AEA0] focus:border-[#111216] focus:outline-hidden rounded-lg text-xs font-mono text-[#111216] transition placeholder:text-[#888B8C]"
           />
-          <span className="absolute right-2.5 text-[9px] font-mono text-[#94A3B8] border border-[#E2E8F0] px-1 py-0.5 rounded bg-[#FAF8F5]">
+          <span className="absolute right-2.5 text-[9px] font-mono text-[#888B8C] border border-[#DCD8CF] px-1 py-0.5 rounded bg-[#F4F1E9]">
             /
           </span>
         </form>
@@ -129,9 +129,9 @@ export const Layout: React.FC = () => {
           {/* Quick Real Incident Ingestion Button */}
           <button
             onClick={() => setCustomModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-xs transition group"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#111216] hover:bg-[#23262D] shadow-fintech-xs transition group"
           >
-            <InjectIncidentIcon className="w-3.5 h-3.5" />
+            <InjectIncidentIcon className="w-3.5 h-3.5 text-[#168F5A]" />
             <span>+ Ingest Incident</span>
           </button>
 
@@ -141,12 +141,12 @@ export const Layout: React.FC = () => {
             className={({ isActive }) =>
               `hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition ${
                 isActive
-                  ? 'bg-[#EAE5DA] text-[#0F172A] font-bold'
-                  : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1EFEA]'
+                  ? 'bg-white text-[#111216] font-bold border border-[#DCD8CF] shadow-xs'
+                  : 'text-[#666A6B] hover:text-[#111216] hover:bg-[#EDE9E0]'
               }`
             }
           >
-            <Zap className="w-3.5 h-3.5 text-[#D97706]" />
+            <Zap className="w-3.5 h-3.5 text-[#168F5A]" />
             <span>Simulation Lab</span>
           </NavLink>
 
@@ -154,42 +154,42 @@ export const Layout: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setConfigMenuOpen(!configMenuOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1EFEA] border border-[#DDD8CC] transition"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-[#666A6B] hover:text-[#111216] hover:bg-[#EDE9E0] border border-[#DCD8CF] transition"
             >
-              <Sliders className="w-3.5 h-3.5 text-[#64748B]" />
+              <Sliders className="w-3.5 h-3.5 text-[#666A6B]" />
               <span className="hidden sm:inline">Config</span>
-              <ChevronDown className="w-3 h-3 text-[#94A3B8]" />
+              <ChevronDown className="w-3 h-3 text-[#888B8C]" />
             </button>
 
             {configMenuOpen && (
               <div
-                className="absolute right-0 mt-2 w-52 bg-white border border-[#E5E1D8] rounded-xl shadow-fintech-lg py-1.5 z-50 text-xs font-mono animate-in fade-in slide-in-from-top-2 duration-150"
+                className="absolute right-0 mt-2 w-52 bg-white border border-[#DCD8CF] rounded-xl shadow-editorial-panel py-1.5 z-50 text-xs font-mono animate-in fade-in slide-in-from-top-2 duration-150"
                 onClick={() => setConfigMenuOpen(false)}
               >
-                <div className="px-3 py-1 text-[10px] uppercase text-[#94A3B8] font-bold border-b border-[#F1EFEA]">
+                <div className="px-3 py-1 text-[10px] uppercase text-[#666A6B] font-bold border-b border-[#EDE9E0]">
                   System Controls
                 </div>
                 <NavLink
                   to="/settings?tab=strategies"
-                  className="block px-3 py-2 text-[#334155] hover:bg-[#FAF8F5] hover:text-[#0F172A]"
+                  className="block px-3 py-2 text-[#111216] hover:bg-[#F4F1E9]"
                 >
                   Strategies &amp; Playbooks
                 </NavLink>
                 <NavLink
                   to="/settings?tab=guardrails"
-                  className="block px-3 py-2 text-[#334155] hover:bg-[#FAF8F5] hover:text-[#0F172A]"
+                  className="block px-3 py-2 text-[#111216] hover:bg-[#F4F1E9]"
                 >
                   Deterministic Guardrails
                 </NavLink>
                 <NavLink
                   to="/settings?tab=integrations"
-                  className="block px-3 py-2 text-[#334155] hover:bg-[#FAF8F5] hover:text-[#0F172A]"
+                  className="block px-3 py-2 text-[#111216] hover:bg-[#F4F1E9]"
                 >
                   Gateway &amp; Webhooks
                 </NavLink>
                 <NavLink
                   to="/settings?tab=settings"
-                  className="block px-3 py-2 text-[#334155] hover:bg-[#FAF8F5] hover:text-[#0F172A]"
+                  className="block px-3 py-2 text-[#111216] hover:bg-[#F4F1E9]"
                 >
                   Merchant Organization
                 </NavLink>
@@ -200,25 +200,25 @@ export const Layout: React.FC = () => {
           <button
             onClick={handleReset}
             disabled={resetting}
-            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1EFEA] border border-[#DDD8CC] transition"
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-[#666A6B] hover:text-[#111216] hover:bg-[#EDE9E0] border border-[#DCD8CF] transition"
             title="Reset to clean baseline dataset"
           >
-            <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin text-[#059669]' : ''}`} />
+            <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin text-[#168F5A]' : ''}`} />
             <span>Reset</span>
           </button>
 
           <button
             onClick={() => setSimModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] shadow-fintech-sm transition active:scale-95 shrink-0 group"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#111216] hover:bg-[#23262D] shadow-fintech-sm transition active:scale-95 shrink-0 group"
           >
-            <SimulateFailureIcon className="w-3.5 h-3.5" />
+            <SimulateFailureIcon className="w-3.5 h-3.5 text-[#168F5A]" />
             <span>Simulate Failure</span>
           </button>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 rounded-lg border border-[#DDD8CC] text-[#64748B] hover:text-[#0F172A]"
+            className="md:hidden p-1.5 rounded-lg border border-[#DCD8CF] text-[#666A6B] hover:text-[#111216]"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
@@ -227,14 +227,14 @@ export const Layout: React.FC = () => {
 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-[#E5E1D8] px-4 py-3 space-y-2 font-mono text-xs shadow-fintech-md animate-in slide-in-from-top-2 duration-150">
+        <div className="md:hidden bg-white border-b border-[#DCD8CF] px-4 py-3 space-y-2 font-mono text-xs shadow-editorial-panel animate-in slide-in-from-top-2 duration-150">
           <form onSubmit={handleGlobalSearch} className="mb-2">
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF8F5] border border-[#DDD8CC] rounded-lg text-xs"
+              className="w-full px-3 py-2 bg-[#F4F1E9] border border-[#DCD8CF] rounded-lg text-xs"
             />
           </form>
           {primaryNav.map((item) => (
@@ -242,7 +242,7 @@ export const Layout: React.FC = () => {
               key={item.to}
               to={item.to}
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-[#334155] hover:bg-[#FAF8F5] font-medium"
+              className="block px-3 py-2 rounded-lg text-[#111216] hover:bg-[#F4F1E9] font-medium"
             >
               {item.label}
             </NavLink>
@@ -250,7 +250,7 @@ export const Layout: React.FC = () => {
           <NavLink
             to="/simulation"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-lg text-[#D97706] hover:bg-[#FAF8F5] font-medium"
+            className="block px-3 py-2 rounded-lg text-[#168F5A] hover:bg-[#F4F1E9] font-medium"
           >
             ⚡ Simulation Lab
           </NavLink>
@@ -263,12 +263,12 @@ export const Layout: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#E5E1D8] bg-[#FAF8F5] py-6 px-6 text-center text-xs text-[#64748B] font-mono">
+      <footer className="border-t border-[#DCD8CF] bg-[#F4F1E9] py-6 px-6 text-center text-xs text-[#666A6B] font-mono">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="font-medium text-sm text-[#475569]">
-            "Every failed payment creates a decision. ReviveAI makes that decision before the revenue disappears."
+          <span className="font-medium text-sm text-[#111216]">
+            "AI recommends the action. Deterministic rules enforce the guardrails. Every recovery is traceable."
           </span>
-          <span className="text-[11px] text-[#94A3B8]">
+          <span className="text-[11px] text-[#888B8C]">
             ReviveAI Sovereign Financial Intelligence &bull; Production Platform
           </span>
         </div>

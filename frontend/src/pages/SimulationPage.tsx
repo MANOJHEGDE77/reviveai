@@ -120,17 +120,17 @@ export const SimulationPage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
       {/* 1. Header */}
-      <div className="pb-3 border-b border-[#E5E1D8] flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
+      <div className="pb-3 border-b border-[#DCD8CF] flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#D97706] bg-[#FFFBEB] px-2.5 py-0.5 rounded-full border border-[#FDE68A]">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#B45309] bg-[#FFFBEB] px-2.5 py-0.5 rounded-full border border-[#FDE68A]">
               DEVELOPER LAB &bull; SCENARIO SIMULATOR
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111216] mt-1">
             Simulation Lab
           </h1>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs text-[#666A6B] mt-0.5">
             Test and demonstrate autonomous AI revenue recovery workflows with simulated decline payloads.
           </p>
         </div>
@@ -139,11 +139,11 @@ export const SimulationPage: React.FC = () => {
         <button
           onClick={handleRunLiveRecoveryDemo}
           disabled={demoLoading}
-          className="px-5 py-2.5 rounded-xl text-xs font-mono font-semibold text-white bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-50 transition flex items-center gap-2 shadow-fintech-sm shrink-0 self-start sm:self-auto"
+          className="px-5 py-2.5 rounded-xl text-xs font-mono font-semibold text-white bg-[#111216] hover:bg-[#23262D] disabled:opacity-50 transition flex items-center gap-2 shadow-xs shrink-0 self-start sm:self-auto"
         >
           {demoLoading ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#34D399]" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#168F5A]" />
               <span>Executing Autonomous Loop...</span>
             </>
           ) : (
@@ -157,17 +157,17 @@ export const SimulationPage: React.FC = () => {
 
       {/* Demo Scenario Results */}
       {demoResult && (
-        <div className="editorial-surface rounded-2xl p-6 sm:p-7 bg-[#ECFDF5] border-[#A7F3D0] space-y-4 shadow-fintech-md animate-in fade-in duration-300">
-          <div className="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-[#A7F3D0]">
+        <div className="editorial-surface rounded-2xl p-6 sm:p-7 bg-[#EAF5EE] border-[#B9E2CD] space-y-4 shadow-editorial-panel animate-in fade-in duration-300">
+          <div className="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-[#B9E2CD]">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#10B981] text-white flex items-center justify-center font-bold">
+              <div className="w-9 h-9 rounded-full bg-[#168F5A] text-white flex items-center justify-center font-bold">
                 ✓
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#065F46] font-mono">
+                <h4 className="text-sm font-bold text-[#168F5A] font-mono">
                   Payment Recovered Successfully — {formatINR(demoResult.amount_recovered)} Settled!
                 </h4>
-                <p className="text-[11px] font-mono text-[#047857]">
+                <p className="text-[11px] font-mono text-[#117348]">
                   Workflow: <strong>{demoResult.workflow_ref}</strong> &bull; Customer: <strong>{demoResult.customer}</strong> &bull; AI Confidence: <strong>{demoResult.ai_confidence}%</strong>
                 </p>
               </div>
@@ -175,16 +175,16 @@ export const SimulationPage: React.FC = () => {
 
             <button
               onClick={() => navigate('/audit')}
-              className="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#059669] hover:bg-[#047857] transition shadow-fintech-xs"
+              className="px-4 py-1.5 rounded-lg text-xs font-mono font-semibold text-white bg-[#168F5A] hover:bg-[#117348] transition shadow-xs"
             >
               View Audit Proof &rarr;
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-[#065F46]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-[#117348]">
             {demoResult.steps_completed.map((step, idx) => (
-              <div key={idx} className="p-3 bg-white/90 rounded-xl border border-[#A7F3D0] flex items-center gap-2 shadow-fintech-xs">
-                <span className="font-bold text-[#059669]">✓</span>
+              <div key={idx} className="p-3 bg-white/90 rounded-xl border border-[#B9E2CD] flex items-center gap-2 shadow-xs">
+                <span className="font-bold text-[#168F5A]">✓</span>
                 <span>{step}</span>
               </div>
             ))}
