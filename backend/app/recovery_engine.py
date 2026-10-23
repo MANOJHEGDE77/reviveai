@@ -1,4 +1,5 @@
 import json
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
@@ -6,6 +7,8 @@ from app.models import Customer, Payment, PaymentEvent, RecoveryWorkflow, Recove
 from app.schemas import AiDiagnosisResult
 from app.guardrails import GuardrailEngine
 from app.ai_agent import AiAgentService
+from app.config import settings
+from app.payment_providers import get_payment_provider, ActionExecutionState
 
 class RevenueRecoveryEngine:
     """
@@ -147,48 +150,84 @@ class RevenueRecoveryEngine:
         cls,
         db: Session,
         workflow: RecoveryWorkflow,
-        executed_by: str = "REVIVE_AI_AGENT"
+        executed_by: str = "REVIVE_AI_AGENT",
+        idempotency_key: Optional[str] = None
     ) -> RecoveryAction:
         """
-        Executes a bounded recovery action step.
+        Executes a bounded recovery action step through the configured payment provider adapter.
+        Re-evaluates deterministic guardrails immediately before dispatching the irreversible action.
         """
         payment = workflow.payment
         customer = payment.customer
 
-        # Validate Guardrails prior to execution
+        # 1. Immediate In-Transaction Guardrail Re-Evaluation
         is_permitted, guardrail_status, guardrail_reason = GuardrailEngine.evaluate_proposed_action(
             payment, workflow, workflow.strategy
         )
 
+        # 2. Strict High-Value Approval Enforcement: Block direct execution bypass
+        if payment.amount >= settings.APPROVAL_THRESHOLD_INR and workflow.status == "PENDING_APPROVAL":
+            is_permitted = False
+            guardrail_status = "BLOCKED_REQUIRES_HUMAN_APPROVAL"
+            guardrail_reason = f"Transaction amount ₹{payment.amount:,.2f} mandates human sign-off via /approvals. Direct execution prohibited."
+
         if not is_permitted:
             action = RecoveryAction(
                 workflow_id=workflow.id,
-                action_type=workflow.strategy,
+                action_type=str(workflow.strategy),
                 executed_by=executed_by,
                 status="FAILED",
+                provider="GUARDRAILS",
+                is_simulated=payment.is_simulated,
                 execution_details=f"Guardrail rejection: {guardrail_reason}"
             )
             db.add(action)
             db.commit()
             return action
 
-        # Increment bounded attempts
+        # 3. Generate or lock Idempotency Key
+        idemp_key = idempotency_key or workflow.idempotency_key or f"IDEMP_{uuid.uuid4().hex[:16]}"
+        workflow.idempotency_key = idemp_key
+
+        # 4. Dispatch through Payment Provider Adapter
+        provider = get_payment_provider()
+        provider_result = provider.execute_retry(
+            payment_ref=payment.payment_ref,
+            amount=payment.amount,
+            currency=payment.currency,
+            strategy=str(workflow.strategy),
+            idempotency_key=idemp_key,
+            customer_context={
+                "customer_ref": customer.customer_ref,
+                "customer_name": customer.name,
+                "payment_method": customer.payment_method_type
+            }
+        )
+
+        # 5. Record Bounded Attempts and Action State
         workflow.attempts += 1
         workflow.current_step = f"EXECUTING_{workflow.strategy}"
         workflow.next_action = "Awaiting bank settlement confirmation"
+        workflow.is_simulated = provider_result.is_simulated
+
+        action_status = provider_result.state.value if hasattr(provider_result.state, "value") else str(provider_result.state)
 
         action = RecoveryAction(
             workflow_id=workflow.id,
-            action_type=workflow.strategy,
+            action_type=str(workflow.strategy),
             executed_by=executed_by,
-            status="EXECUTED",
-            execution_details=f"Dispatched {workflow.strategy} through smart routing network. Attempt {workflow.attempts}/{workflow.max_attempts}."
+            status=action_status,
+            provider=provider_result.provider_name,
+            provider_action_ref=provider_result.provider_action_ref,
+            is_simulated=provider_result.is_simulated,
+            idempotency_key=idemp_key,
+            execution_details=f"{provider_result.message} (Attempt {workflow.attempts}/{workflow.max_attempts})"
         )
         db.add(action)
 
         cls._add_event(
             db, payment, "ACTION_EXECUTED",
-            f"Action {workflow.strategy} executed by {executed_by} (Attempt {workflow.attempts}/{workflow.max_attempts}).",
+            f"Action {workflow.strategy} dispatched via {provider_result.provider_name} by {executed_by} (Attempt {workflow.attempts}/{workflow.max_attempts}). State: {action_status}.",
             executed_by
         )
 
@@ -199,11 +238,18 @@ class RevenueRecoveryEngine:
             payment_ref=payment.payment_ref,
             customer_ref=customer.customer_ref,
             amount=payment.amount,
-            decision=f"Executed {workflow.strategy}",
-            reason=f"Attempt {workflow.attempts}/{workflow.max_attempts} within 24h recovery window",
+            decision=f"Executed {workflow.strategy} via {provider_result.provider_name}",
+            reason=f"Attempt {workflow.attempts}/{workflow.max_attempts} within 24h recovery window. Provider Ref: {provider_result.provider_action_ref}",
             guardrail_result="PASSED",
-            outcome_status="SUCCESS",
-            details_json=json.dumps({"action_id": action.id, "workflow_ref": workflow.workflow_ref})
+            outcome_status="SUCCESS" if provider_result.success else "FAILED",
+            details_json=json.dumps({
+                "action_id": action.id,
+                "workflow_ref": workflow.workflow_ref,
+                "provider": provider_result.provider_name,
+                "state": action_status,
+                "is_simulated": provider_result.is_simulated,
+                "idempotency_key": idemp_key
+            })
         )
 
         db.commit()
@@ -214,14 +260,39 @@ class RevenueRecoveryEngine:
         cls,
         db: Session,
         payment: Payment,
-        settlement_ref: Optional[str] = None
+        settlement_ref: Optional[str] = None,
+        settlement_evidence: Optional[Any] = None
     ) -> Payment:
         """
-        Signals that a payment retry or re-engagement succeeded.
-        Triggers automatic workflow termination and updates analytics.
+        Verifies authoritative settlement evidence before recording revenue recovery.
+        Does NOT increment recovered revenue until authoritative evidence is verified.
         """
+        provider = get_payment_provider()
+        if settlement_evidence and isinstance(settlement_evidence, dict):
+            action_ref = settlement_ref or settlement_evidence.get("provider_payment_id") or f"act_{payment.payment_ref}"
+        else:
+            action_ref = settlement_ref or f"act_{payment.payment_ref}"
+        
+        # Verify authoritative settlement evidence
+        verification = provider.verify_settlement(
+            payment_ref=payment.payment_ref,
+            amount=payment.amount,
+            provider_action_ref=action_ref
+        )
+
+        if not verification.verified:
+            cls._add_event(
+                db, payment, "SETTLEMENT_VERIFICATION_FAILED",
+                f"Settlement verification rejected by provider {provider.__class__.__name__}.",
+                "SYSTEM"
+            )
+            return payment
+
+        # Authoritative settlement verified
         payment.status = "RECOVERED"
-        payment.recovered_at = datetime.now(timezone.utc)
+        payment.recovered_at = verification.settled_at
+        payment.is_simulated = verification.is_simulated
+        payment.settlement_evidence = verification.evidence_trail
         payment.customer.successful_transactions += 1
         payment.customer.lifetime_value += payment.amount
 
@@ -231,7 +302,7 @@ class RevenueRecoveryEngine:
             workflow.status = "RESOLVED"
             workflow.current_step = "PAYMENT_SETTLED"
             workflow.next_action = "None (Workflow Completed)"
-            workflow.result_message = f"Successfully recovered ₹{payment.amount:,.2f} via {workflow.strategy}."
+            workflow.result_message = f"Successfully recovered ₹{payment.amount:,.2f} via {workflow.strategy}. Verified by {verification.evidence_trail}."
 
             cls._add_event(
                 db, payment, "WORKFLOW_TERMINATED",
@@ -241,7 +312,7 @@ class RevenueRecoveryEngine:
 
         cls._add_event(
             db, payment, "PAYMENT_RETRY_SUCCESS",
-            f"Payment retry succeeded! Recovered ₹{payment.amount:,.2f}. Settlement Ref: {settlement_ref or 'RAZORPAY_SIM_' + payment.payment_ref}.",
+            f"Payment retry settled & verified! Recovered ₹{payment.amount:,.2f}. Evidence: {verification.evidence_trail}",
             "RAZORPAY_GATEWAY"
         )
 
@@ -253,10 +324,16 @@ class RevenueRecoveryEngine:
             customer_ref=payment.customer.customer_ref,
             amount=payment.amount,
             decision="Payment Successfully Recovered",
-            reason=f"Settled through autonomous recovery workflow {workflow.workflow_ref if workflow else 'N/A'}",
+            reason=f"Authoritatively verified through {verification.settlement_ref}. Simulated: {verification.is_simulated}.",
             guardrail_result="TERMINATED_ON_SUCCESS",
             outcome_status="SUCCESS",
-            details_json=json.dumps({"amount_recovered": payment.amount, "settled_at": payment.recovered_at.isoformat()})
+            details_json=json.dumps({
+                "amount_recovered": payment.amount,
+                "settled_at": payment.recovered_at.isoformat(),
+                "settlement_ref": verification.settlement_ref,
+                "is_simulated": verification.is_simulated,
+                "evidence": verification.evidence_trail
+            })
         )
 
         db.commit()

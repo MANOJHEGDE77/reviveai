@@ -134,10 +134,21 @@ export interface RevenueChartPoint {
   recovered_count: number;
 }
 
+export interface Operator {
+  id: string;
+  email: string;
+  name: string;
+  role: 'VIEWER' | 'OPERATOR' | 'RISK_LEAD' | 'ADMIN';
+}
+
 export interface DashboardSummary {
   revenue_at_risk: number;
   estimated_recoverable: number;
   successfully_recovered: number;
+  live_recovered_revenue?: number;
+  simulated_recovered_revenue?: number;
+  provider_mode?: string;
+  is_provider_live?: boolean;
   recovery_rate: number;
   active_workflows_count: number;
   pending_approvals_count: number;

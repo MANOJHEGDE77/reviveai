@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import AuditLog
 from app.schemas import AuditLogOut
+from app.auth import require_roles, Role, Operator
 
 router = APIRouter(prefix="/audit", tags=["Audit"])
 
@@ -13,6 +14,7 @@ def list_audit_logs(
     event_type: Optional[str] = Query(None, description="DIAGNOSIS, STRATEGY_SELECTION, ACTION_EXECUTION, GUARDRAIL_CHECK, APPROVAL_DECISION, PAYMENT_RECOVERY"),
     search: Optional[str] = Query(None, description="Search in decision, reason, payment_ref, or customer_ref"),
     limit: int = Query(50, ge=1, le=200),
+    operator: Operator = Depends(require_roles([Role.VIEWER, Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
     db: Session = Depends(get_db)
 ):
     query = db.query(AuditLog)

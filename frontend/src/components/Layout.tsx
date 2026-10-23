@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   RotateCcw,
@@ -32,7 +32,45 @@ export const Layout: React.FC = () => {
   const [resetting, setResetting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [configMenuOpen, setConfigMenuOpen] = useState(false);
+  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentRole, setCurrentRole] = useState<'VIEWER' | 'OPERATOR' | 'RISK_LEAD' | 'ADMIN'>(
+    () => (localStorage.getItem('reviveai_role') as any) || 'RISK_LEAD'
+  );
+  const [operatorName, setOperatorName] = useState('Aditi Rao');
+
+  useEffect(() => {
+    // Sync current operator from server
+    apiClient.getCurrentOperator().then((res) => {
+      if (res?.operator) {
+        setCurrentRole(res.operator.role);
+        setOperatorName(res.operator.name);
+      }
+    }).catch(() => {
+      // Offline fallback
+    });
+  }, []);
+
+  const handleRoleChange = async (newRole: 'VIEWER' | 'OPERATOR' | 'RISK_LEAD' | 'ADMIN') => {
+    try {
+      const res = await apiClient.switchRole(newRole);
+      setCurrentRole(newRole);
+      setOperatorName(res.operator.name);
+      setRoleMenuOpen(false);
+      setToast({
+        type: 'success',
+        message: `Identity Switched: ${newRole}`,
+        subMessage: `Now acting as ${res.operator.name} with verified server JWT token.`,
+      });
+      setTimeout(() => window.location.reload(), 400);
+    } catch (e) {
+      setToast({
+        type: 'error',
+        message: 'Role Switch Failed',
+        subMessage: 'Could not switch operator role.',
+      });
+    }
+  };
 
   // 5 Primary Navigation Items
   const primaryNav = [
@@ -149,6 +187,83 @@ export const Layout: React.FC = () => {
             <Zap className="w-3.5 h-3.5 text-[#168F5A]" />
             <span>Simulation Lab</span>
           </NavLink>
+
+          {/* Operator RBAC Identity & Role Switcher */}
+          <div className="relative">
+            <button
+              onClick={() => setRoleMenuOpen(!roleMenuOpen)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition shadow-xs"
+              title="Authenticated Operator Role & Identity"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#168F5A]" />
+              <span className="font-bold text-[11px] text-[#168F5A]">{currentRole}</span>
+              <span className="hidden md:inline text-[11px] text-[#666A6B]">&bull; {operatorName.split(' ')[0]}</span>
+              <ChevronDown className="w-3 h-3 text-[#888B8C]" />
+            </button>
+
+            {roleMenuOpen && (
+              <div
+                className="absolute right-0 mt-2 w-64 bg-white border border-[#DCD8CF] rounded-xl shadow-editorial-panel py-2 z-50 text-xs font-mono animate-in fade-in slide-in-from-top-2 duration-150"
+              >
+                <div className="px-3 py-1 text-[10px] uppercase text-[#666A6B] font-bold border-b border-[#EDE9E0]">
+                  Switch Operator Identity (RBAC)
+                </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => handleRoleChange('RISK_LEAD')}
+                    className={`w-full text-left px-3 py-2 text-xs flex flex-col hover:bg-[#F4F1E9] transition ${
+                      currentRole === 'RISK_LEAD' ? 'bg-[#F4F1E9] font-bold text-[#168F5A]' : 'text-[#111216]'
+                    }`}
+                  >
+                    <span className="flex items-center justify-between">
+                      <span>Aditi Rao (Risk Lead)</span>
+                      {currentRole === 'RISK_LEAD' && <span className="text-[10px] text-[#168F5A] font-bold">Active</span>}
+                    </span>
+                    <span className="text-[10px] text-[#666A6B] font-sans">Full sign-off on approvals &gt; ₹50K &amp; recovery</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleRoleChange('OPERATOR')}
+                    className={`w-full text-left px-3 py-2 text-xs flex flex-col hover:bg-[#F4F1E9] transition ${
+                      currentRole === 'OPERATOR' ? 'bg-[#F4F1E9] font-bold text-[#168F5A]' : 'text-[#111216]'
+                    }`}
+                  >
+                    <span className="flex items-center justify-between">
+                      <span>Vikram Seth (Operator)</span>
+                      {currentRole === 'OPERATOR' && <span className="text-[10px] text-[#168F5A] font-bold">Active</span>}
+                    </span>
+                    <span className="text-[10px] text-[#666A6B] font-sans">Execute workflows &amp; trigger investigations</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleRoleChange('VIEWER')}
+                    className={`w-full text-left px-3 py-2 text-xs flex flex-col hover:bg-[#F4F1E9] transition ${
+                      currentRole === 'VIEWER' ? 'bg-[#F4F1E9] font-bold text-[#168F5A]' : 'text-[#111216]'
+                    }`}
+                  >
+                    <span className="flex items-center justify-between">
+                      <span>Pooja Nair (Viewer)</span>
+                      {currentRole === 'VIEWER' && <span className="text-[10px] text-[#168F5A] font-bold">Active</span>}
+                    </span>
+                    <span className="text-[10px] text-[#666A6B] font-sans">Read-only audit &amp; compliance inspector</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleRoleChange('ADMIN')}
+                    className={`w-full text-left px-3 py-2 text-xs flex flex-col hover:bg-[#F4F1E9] transition ${
+                      currentRole === 'ADMIN' ? 'bg-[#F4F1E9] font-bold text-[#168F5A]' : 'text-[#111216]'
+                    }`}
+                  >
+                    <span className="flex items-center justify-between">
+                      <span>Karan Mehra (Admin)</span>
+                      {currentRole === 'ADMIN' && <span className="text-[10px] text-[#168F5A] font-bold">Active</span>}
+                    </span>
+                    <span className="text-[10px] text-[#666A6B] font-sans">System reset &amp; security governance</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Configuration Dropdown */}
           <div className="relative">

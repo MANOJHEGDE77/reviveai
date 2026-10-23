@@ -6,17 +6,30 @@ from sqlalchemy import func
 from app.database import get_db
 from app.models import Payment, RecoveryWorkflow, ApprovalRequest, AuditLog
 from app.schemas import DashboardSummaryOut, RevenueRiskCategory, RevenueChartPoint, LiveAiOperation
+from app.auth import require_roles, Role, Operator
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @router.get("/summary", response_model=DashboardSummaryOut)
-def get_dashboard_summary(db: Session = Depends(get_db)):
-    # 1. KPI Calculations from DB
+def get_dashboard_summary(
+    operator: Operator = Depends(require_roles([Role.VIEWER, Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
+    db: Session = Depends(get_db)
+):
+    # 1. Honest KPI Calculations from DB separating Live vs Simulated
     at_risk_query = db.query(func.coalesce(func.sum(Payment.amount), 0.0))\
         .filter(Payment.status.in_(["FAILED", "IN_RECOVERY", "REQUIRES_APPROVAL"])).scalar()
     
     recovered_query = db.query(func.coalesce(func.sum(Payment.amount), 0.0))\
         .filter(Payment.status == "RECOVERED").scalar()
+
+    live_recovered = db.query(func.coalesce(func.sum(Payment.amount), 0.0))\
+        .filter(Payment.status == "RECOVERED", Payment.is_simulated == False).scalar()
+
+    simulated_recovered = db.query(func.coalesce(func.sum(Payment.amount), 0.0))\
+        .filter(Payment.status == "RECOVERED", Payment.is_simulated == True).scalar()
+
+    live_incidents = db.query(Payment).filter(Payment.is_simulated == False).count()
+    simulated_incidents = db.query(Payment).filter(Payment.is_simulated == True).count()
 
     # Estimated Recoverable
     payments_at_risk = db.query(Payment)\
@@ -126,6 +139,11 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         pending_approvals_count=pending_appr_count,
         failed_incidents_count=failed_incidents_count,
         recovered_incidents_count=recovered_incidents_count,
+        live_recovered_revenue=round(float(live_recovered), 2),
+        simulated_recovered_revenue=round(float(simulated_recovered), 2),
+        live_incidents_count=live_incidents,
+        simulated_incidents_count=simulated_incidents,
+        is_demo_mode=True,
         risk_categories=risk_categories,
         revenue_trend=trend_points,
         live_operations=live_ops

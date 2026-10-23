@@ -42,6 +42,9 @@ class Payment(Base):
     ai_recommendation = Column(String(256), nullable=True)
     ai_diagnosis_summary = Column(Text, nullable=True)
     ai_confidence = Column(Integer, nullable=True) # 0-100%
+    diagnosis_source = Column(String(64), default="DETERMINISTIC_HEURISTIC", nullable=False) # GEMINI_1_5_FLASH or DETERMINISTIC_HEURISTIC
+    is_simulated = Column(Boolean, default=True, nullable=False)
+    settlement_evidence = Column(String(512), nullable=True)
     created_at = Column(DateTime, default=utc_now, nullable=False)
     updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
     recovered_at = Column(DateTime, nullable=True)
@@ -80,6 +83,9 @@ class RecoveryWorkflow(Base):
     attempts = Column(Integer, default=0, nullable=False)
     max_attempts = Column(Integer, default=2, nullable=False)
     deadline_time = Column(DateTime, nullable=True)
+    scheduled_execution_at = Column(DateTime, nullable=True)
+    is_simulated = Column(Boolean, default=True, nullable=False)
+    idempotency_key = Column(String(128), nullable=True, index=True)
     status = Column(String(32), index=True, nullable=False) # ACTIVE, WAITING, PENDING_APPROVAL, RESOLVED, EXPIRED, REJECTED, CANCELLED
     result_message = Column(Text, nullable=True)
     created_at = Column(DateTime, default=utc_now, nullable=False)
@@ -97,7 +103,11 @@ class RecoveryAction(Base):
     workflow_id = Column(Integer, ForeignKey("recovery_workflows.id"), nullable=False, index=True)
     action_type = Column(String(64), nullable=False) # DELAYED_RETRY, FALLBACK_GATEWAY_ROUTING, RECOVERY_SMS_EMAIL, APPROVAL_ESCALATION
     executed_by = Column(String(64), nullable=False) # REVIVE_AI_AGENT, HUMAN_OPERATOR
-    status = Column(String(32), nullable=False) # SCHEDULED, EXECUTED, FAILED, CANCELLED
+    status = Column(String(32), nullable=False) # PENDING_EXECUTION, SIMULATED_EXECUTION, PROVIDER_SUBMITTED, PROVIDER_CONFIRMED, SETTLEMENT_VERIFIED, EXECUTED, FAILED, TIMEOUT, CANCELLED
+    provider = Column(String(64), default="SIMULATION", nullable=False)
+    provider_action_ref = Column(String(128), nullable=True)
+    is_simulated = Column(Boolean, default=True, nullable=False)
+    idempotency_key = Column(String(128), nullable=True, index=True)
     execution_details = Column(Text, nullable=True)
     created_at = Column(DateTime, default=utc_now, nullable=False)
 
@@ -142,4 +152,19 @@ class AuditLog(Base):
     guardrail_result = Column(String(128), nullable=True) # PASSED, ESCALATED, BLOCKED
     outcome_status = Column(String(64), nullable=False) # SUCCESS, SCHEDULED, REJECTED, TERMINATED, FAILED
     details_json = Column(Text, nullable=True)
+
+
+class IdempotencyRecord(Base):
+    __tablename__ = "idempotency_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    idempotency_key = Column(String(128), unique=True, index=True, nullable=False)
+    endpoint = Column(String(256), nullable=False)
+    request_hash = Column(String(64), nullable=False)
+    status = Column(String(32), index=True, default="PROCESSING", nullable=False) # PROCESSING, COMPLETED, FAILED
+    response_code = Column(Integer, nullable=True)
+    response_body = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+
 

@@ -38,6 +38,8 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<'7D' | '30D' | '90D'>('7D');
+  const [error, setError] = useState<string | null>(null);
+  const [isStale, setIsStale] = useState(false);
   const [dismissOnboarding, setDismissOnboarding] = useState(() => {
     return localStorage.getItem('reviveai_onboarding_dismissed') === 'true';
   });
@@ -48,8 +50,15 @@ export const DashboardPage: React.FC = () => {
       if (showRefresh) setRefreshing(true);
       const data = await apiClient.getDashboardSummary();
       setSummary(data);
-    } catch (err) {
+      setError(null);
+      setIsStale(false);
+    } catch (err: any) {
       console.error('Failed to load summary:', err);
+      if (summary) {
+        setIsStale(true);
+      } else {
+        setError(err?.response?.data?.detail || err?.message || 'Failed to connect to ReviveAI server.');
+      }
     } finally {
       setLoading(false);
       if (showRefresh) setTimeout(() => setRefreshing(false), 400);
@@ -69,7 +78,7 @@ export const DashboardPage: React.FC = () => {
 
   if (loading && !summary) {
     return (
-      <div className="space-y-6 animate-pulse">
+      <div className="space-y-6 animate-pulse max-w-5xl mx-auto py-8">
         <div className="h-8 w-64 bg-[#E5E1D8] rounded-lg" />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="h-32 bg-white rounded-xl border border-[#E5E1D8]" />
@@ -78,6 +87,27 @@ export const DashboardPage: React.FC = () => {
           <div className="h-32 bg-white rounded-xl border border-[#E5E1D8]" />
         </div>
         <div className="h-72 bg-white rounded-xl border border-[#E5E1D8]" />
+      </div>
+    );
+  }
+
+  if (error && !summary) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 text-center space-y-4">
+        <div className="w-12 h-12 rounded-full bg-[#FEE2E2] text-[#DC2626] mx-auto flex items-center justify-center font-mono font-bold text-lg">
+          !
+        </div>
+        <h2 className="text-xl font-bold text-[#111216]">Telemetry Disconnected</h2>
+        <p className="text-xs text-[#666A6B] max-w-md mx-auto font-sans leading-relaxed">
+          {error}
+        </p>
+        <button
+          onClick={() => fetchSummary(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#111216] text-white rounded-lg text-xs font-mono font-bold hover:bg-[#23262D] transition shadow-xs"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Retry Server Connection</span>
+        </button>
       </div>
     );
   }
@@ -200,6 +230,37 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Telemetry Status & Provider Integrity Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-white border border-[#DCD8CF] rounded-xl text-[11px] font-mono text-[#666A6B]">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#168F5A] animate-pulse" />
+            <span className="font-bold text-[#111216]">PROVIDER MODE:</span>
+            <span className="px-2 py-0.5 rounded bg-[#EDE9E0] text-[#111216] font-bold">
+              {summary?.provider_mode || 'SIMULATION_SANDBOX'}
+            </span>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5 text-[#666A6B]">
+            <span>&bull;</span>
+            <span>SETTLEMENT:</span>
+            <span className="text-[#168F5A] font-bold">Authoritative Verification Enforced</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-1.5 text-[#666A6B]">
+            <span>&bull;</span>
+            <span>IDEMPOTENCY:</span>
+            <span className="text-[#111216] font-medium">Deduplication Keys Active</span>
+          </div>
+        </div>
+
+        {isStale && (
+          <span className="px-2 py-0.5 bg-[#FEF3C7] text-[#B45309] rounded text-[10px] font-bold flex items-center gap-1">
+            <span>&#9888;</span> Stale Telemetry (Retrying Sync...)
+          </span>
+        )}
+      </div>
+
       {/* SECTION 1 — KPI METRIC CARDS */}
       <section className="space-y-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
@@ -222,23 +283,23 @@ export const DashboardPage: React.FC = () => {
           {/* 2. Estimated Recoverable */}
           <div className="editorial-surface rounded-2xl p-5 bg-white space-y-2 hover:border-[#C8C3B7] transition">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase text-[#666A6B] font-bold tracking-wider">Recoverable</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full state-tag-investigating font-bold">
-                AI Strategy
+              <span className="text-[10px] uppercase text-[#666A6B] font-bold tracking-wider">Recoverable (Estimate)</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-sm bg-[#DBEAFE] text-[#1D4ED8] font-bold">
+                HEURISTIC PROJECTION
               </span>
             </div>
             <span className="text-2xl sm:text-3xl font-extrabold text-[#1D4ED8] block tracking-tight mono-num">
               {formatINR(recoverable)}
             </span>
-            <p className="text-[11px] text-[#1D4ED8] font-sans">
-              High-probability yield projection
+            <p className="text-[11px] text-[#666A6B] font-sans">
+              Algorithmic yield projection &bull; Not ledger credit
             </p>
           </div>
 
-          {/* 3. Successfully Recovered */}
+          {/* 3. Successfully Recovered (Honest Breakdown) */}
           <div className="editorial-surface rounded-2xl p-5 bg-white border-[#B9E2CD] space-y-2 hover:border-[#168F5A] transition">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase text-[#168F5A] font-bold tracking-wider">Recovered Funds</span>
+              <span className="text-[10px] uppercase text-[#168F5A] font-bold tracking-wider">Verified Recovered</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full state-tag-recovered font-bold">
                 Settled
               </span>
@@ -246,9 +307,16 @@ export const DashboardPage: React.FC = () => {
             <span className="text-2xl sm:text-3xl font-extrabold text-[#168F5A] block tracking-tight mono-num">
               {formatINR(recovered)}
             </span>
-            <p className="text-[11px] text-[#168F5A] font-sans">
-              Auto-credited to merchant account
-            </p>
+            <div className="text-[10px] space-y-0.5 pt-1 border-t border-[#EDE9E0] text-[#666A6B] font-mono">
+              <div className="flex justify-between">
+                <span>Live Provider:</span>
+                <span className="font-bold text-[#111216]">{formatINR(summary?.live_recovered_revenue || 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Simulated:</span>
+                <span className="text-[#666A6B]">{formatINR(summary?.simulated_recovered_revenue || recovered)}</span>
+              </div>
+            </div>
           </div>
 
           {/* 4. Recovery Yield Rate */}

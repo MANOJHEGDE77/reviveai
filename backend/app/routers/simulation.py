@@ -1,25 +1,36 @@
 import random
 from datetime import datetime, timedelta
-from typing import Dict, Any
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Dict, Any, Optional
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.database import get_db, Base, engine
 from app.models import Customer, Payment, PaymentEvent, RecoveryWorkflow, RecoveryAction, ApprovalRequest, AuditLog
 from app.schemas import SimulateEventRequest, PaymentDetailOut
 from app.recovery_engine import RevenueRecoveryEngine
 from app.seeder import seed_demo_data
+from app.auth import require_roles, Role, Operator
+from app.idempotency import IdempotencyManager
 
 router = APIRouter(prefix="/simulation", tags=["Simulation"])
 
 @router.post("/trigger", response_model=PaymentDetailOut)
 async def trigger_simulated_payment_event(
     body: SimulateEventRequest,
+    operator: Operator = Depends(require_roles([Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
     db: Session = Depends(get_db)
 ):
     """
     Simulates an incoming payment failure event into ReviveAI.
     Automatically enters the agent loop: Detect -> Understand -> Decide -> Act.
     """
+    if idempotency_key:
+        cached = IdempotencyManager.check_or_acquire_lock(
+            db, idempotency_key, "/simulation/trigger", body.model_dump()
+        )
+        if cached:
+            status_code, data = cached
+            return data
     # 1. Fetch or create customer using real user-supplied fields if provided
     customer = None
     if body.customer_email:
@@ -113,12 +124,22 @@ async def trigger_simulated_payment_event(
 @router.post("/resolve/{payment_id}", response_model=PaymentDetailOut)
 def resolve_simulated_payment_success(
     payment_id: int,
+    operator: Operator = Depends(require_roles([Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
     db: Session = Depends(get_db)
 ):
     """
     Simulates customer completing payment (e.g. delayed retry settling, checkout link paid).
-    Verifies automatic workflow termination and revenue update.
+    Verifies automatic workflow termination and revenue update with authoritative evidence.
     """
+    if idempotency_key:
+        cached = IdempotencyManager.check_or_acquire_lock(
+            db, idempotency_key, f"/simulation/resolve/{payment_id}"
+        )
+        if cached:
+            status_code, data = cached
+            return data
+
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
@@ -128,10 +149,19 @@ def resolve_simulated_payment_success(
     events = db.query(PaymentEvent).filter(PaymentEvent.payment_id == resolved_payment.id).order_by(PaymentEvent.created_at.asc()).all()
     detail = PaymentDetailOut.model_validate(resolved_payment)
     detail.events = events
+
+    if idempotency_key:
+        IdempotencyManager.record_completion(
+            db, idempotency_key, 200, PaymentDetailOut.model_validate(detail).model_dump(mode="json")
+        )
+
     return detail
 
 @router.post("/demo-scenario")
-async def run_guided_demo_scenario(db: Session = Depends(get_db)) -> Dict[str, Any]:
+async def run_guided_demo_scenario(
+    operator: Operator = Depends(require_roles([Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
     """
     Executes the entire 10-step demo scenario defined in the enterprise platform specification:
     1. ₹24,900 payment fails
@@ -173,7 +203,8 @@ async def run_guided_demo_scenario(db: Session = Depends(get_db)) -> Dict[str, A
         failure_code="CARD_DECLINED_TEMP",
         failure_reason="Temporary issuer decline: HDFC switch intermittent drop.",
         risk_level="MEDIUM",
-        recovery_probability=0.88
+        recovery_probability=0.88,
+        is_simulated=True
     )
     db.add(payment)
     db.flush()
@@ -182,7 +213,7 @@ async def run_guided_demo_scenario(db: Session = Depends(get_db)) -> Dict[str, A
         payment_id=payment.id,
         event_type="PAYMENT_FAILED",
         description=f"Payment of ₹{payment_amount:,.2f} declined by card network (CARD_DECLINED_TEMP).",
-        actor="SYSTEM"
+        actor=f"{operator.name} ({operator.role.value})"
     ))
     db.commit()
 
@@ -200,6 +231,7 @@ async def run_guided_demo_scenario(db: Session = Depends(get_db)) -> Dict[str, A
         "customer": customer.name,
         "workflow_ref": workflow.workflow_ref,
         "ai_confidence": resolved_payment.ai_confidence,
+        "is_simulated": True,
         "steps_completed": [
             "1. Payment failure detected (₹24,900.00)",
             "2. ReviveAI collected customer history (8 past successes, ₹98.4K CLV)",
@@ -215,11 +247,18 @@ async def run_guided_demo_scenario(db: Session = Depends(get_db)) -> Dict[str, A
     }
 
 @router.post("/reset")
-def reset_demo_database(db: Session = Depends(get_db)):
+def reset_demo_database(
+    operator: Operator = Depends(require_roles([Role.ADMIN])),
+    db: Session = Depends(get_db)
+):
     """
-    Clears the database and reseeds with realistic Indian fintech test data.
+    Administrative reset: Clears the database and reseeds with realistic Indian fintech test data.
+    Restricted strictly to ADMIN role.
     """
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     seed_demo_data(db)
-    return {"message": "ReviveAI database reset and seeded successfully."}
+    return {
+        "message": "ReviveAI database reset and seeded successfully.",
+        "reset_by": operator.email
+    }

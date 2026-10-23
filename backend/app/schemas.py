@@ -1,20 +1,48 @@
+from enum import Enum
 from datetime import datetime
 from typing import Optional, List, Any
 from pydantic import BaseModel, Field, ConfigDict
 
+# --- Strict Pydantic Enums ---
+class RecoveryStrategyEnum(str, Enum):
+    DELAYED_RETRY = "DELAYED_RETRY"
+    SMART_ROUTING = "SMART_ROUTING"
+    DISCOUNTED_CHECKOUT_REENGAGEMENT = "DISCOUNTED_CHECKOUT_REENGAGEMENT"
+    UPI_INTENT_SWITCH = "UPI_INTENT_SWITCH"
+    CARD_EXPIRY_NOTIFICATION = "CARD_EXPIRY_NOTIFICATION"
+
+class RiskLevelEnum(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+class FailureCategoryEnum(str, Enum):
+    TEMPORARY_DECLINE = "TEMPORARY_DECLINE"
+    CHECKOUT_ABANDONED = "CHECKOUT_ABANDONED"
+    SUBSCRIPTION_DECLINE = "SUBSCRIPTION_DECLINE"
+    OVERDUE_INVOICE = "OVERDUE_INVOICE"
+    REPEAT_DECLINE = "REPEAT_DECLINE"
+    NETWORK_TIMEOUT = "NETWORK_TIMEOUT"
+
+class DiagnosisSourceEnum(str, Enum):
+    GEMINI_1_5_FLASH = "GEMINI_1_5_FLASH"
+    DETERMINISTIC_HEURISTIC = "DETERMINISTIC_HEURISTIC"
+
 # --- AI Diagnosis & Strategy Schema (Structured Output) ---
 class AiDiagnosisResult(BaseModel):
-    diagnosis: str = Field(..., description="Root cause diagnosis of the payment or revenue failure")
+    diagnosis: str = Field(..., min_length=5, description="Root cause diagnosis of the payment or revenue failure")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score between 0.0 and 1.0")
-    risk_level: str = Field(..., description="LOW, MEDIUM, HIGH, or CRITICAL")
-    recommended_action: str = Field(..., description="DELAYED_RETRY, SMART_ROUTING, DISCOUNTED_CHECKOUT_REENGAGEMENT, UPI_INTENT_SWITCH, or CARD_EXPIRY_NOTIFICATION")
-    retry_after_minutes: int = Field(default=120, description="Optimal cooldown in minutes before executing retry")
-    max_attempts: int = Field(default=2, description="Bounded retry limit (default 2)")
+    risk_level: RiskLevelEnum = Field(..., description="LOW, MEDIUM, HIGH, or CRITICAL")
+    recommended_action: RecoveryStrategyEnum = Field(..., description="Calibrated recovery strategy")
+    retry_after_minutes: int = Field(default=120, ge=1, le=1440, description="Optimal cooldown in minutes before executing retry")
+    max_attempts: int = Field(default=2, ge=1, le=2, description="Bounded retry limit (strictly <= 2)")
     requires_approval: bool = Field(default=False, description="Whether high value requires human sign-off")
-    reason: str = Field(..., description="Detailed explainable reasoning citing customer history, failure pattern, and historical recovery rate")
-    evidence_success_count: int = Field(default=4, description="Customer past successful payment count")
-    evidence_clv: float = Field(default=18400.0, description="Customer lifetime value")
-    evidence_historical_prob: float = Field(default=0.78, description="Historical cohort recovery probability")
+    reason: str = Field(..., min_length=5, description="Explainable rationale citing empirical customer history and cohort data")
+    evidence_success_count: int = Field(default=4, ge=0, description="Customer past successful payment count")
+    evidence_clv: float = Field(default=18400.0, ge=0.0, description="Customer lifetime value")
+    evidence_historical_prob: float = Field(default=0.78, ge=0.0, le=1.0, description="Historical cohort recovery probability")
+    diagnosis_source: DiagnosisSourceEnum = Field(default=DiagnosisSourceEnum.DETERMINISTIC_HEURISTIC, description="Source of reasoning")
     stop_conditions: List[str] = Field(default_factory=lambda: ["PAYMENT_SUCCESS", "MAX_ATTEMPTS_REACHED", "CUSTOMER_OPT_OUT", "DUPLICATE_ACTION"])
 
 # --- Customer Schemas ---
@@ -50,6 +78,10 @@ class RecoveryActionOut(BaseModel):
     action_type: str
     executed_by: str
     status: str
+    provider: Optional[str] = "SIMULATION"
+    provider_action_ref: Optional[str] = None
+    is_simulated: bool = True
+    idempotency_key: Optional[str] = None
     execution_details: Optional[str] = None
     created_at: datetime
 
@@ -67,6 +99,9 @@ class RecoveryWorkflowOut(BaseModel):
     attempts: int
     max_attempts: int
     deadline_time: Optional[datetime] = None
+    scheduled_execution_at: Optional[datetime] = None
+    is_simulated: bool = True
+    idempotency_key: Optional[str] = None
     status: str
     result_message: Optional[str] = None
     created_at: datetime
@@ -90,6 +125,9 @@ class PaymentOut(BaseModel):
     ai_recommendation: Optional[str] = None
     ai_diagnosis_summary: Optional[str] = None
     ai_confidence: Optional[int] = None
+    diagnosis_source: Optional[str] = "DETERMINISTIC_HEURISTIC"
+    is_simulated: bool = True
+    settlement_evidence: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     recovered_at: Optional[datetime] = None
@@ -125,7 +163,7 @@ class ApprovalRequestOut(BaseModel):
 class ApprovalDecisionRequest(BaseModel):
     decision: str = Field(..., description="APPROVE or REJECT")
     operator_notes: Optional[str] = None
-    decision_by: Optional[str] = "Risk Lead (SecOps)"
+    decision_by: Optional[str] = None
 
 # --- Audit Schemas ---
 class AuditLogOut(BaseModel):
@@ -178,6 +216,11 @@ class DashboardSummaryOut(BaseModel):
     pending_approvals_count: int
     failed_incidents_count: int
     recovered_incidents_count: int
+    live_recovered_revenue: float = 0.0
+    simulated_recovered_revenue: float = 0.0
+    live_incidents_count: int = 0
+    simulated_incidents_count: int = 0
+    is_demo_mode: bool = True
     risk_categories: List[RevenueRiskCategory]
     revenue_trend: List[RevenueChartPoint]
     live_operations: List[LiveAiOperation]

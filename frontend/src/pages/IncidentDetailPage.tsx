@@ -244,14 +244,19 @@ export const IncidentDetailPage: React.FC = () => {
 
         {/* STAGE 03 — WHY? (AI REASONING CONSOLE) */}
         <div className="editorial-surface rounded-2xl p-6 bg-[#0F172A] text-white border border-[#0F172A] space-y-4 shadow-fintech-md">
-          <div className="flex items-center justify-between pb-2 border-b border-[#334155]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#334155]">
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#34D399] flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               STAGE 03 &bull; WHY DID IT HAPPEN? (AI DIAGNOSTIC REASONING)
             </span>
-            <span className="text-xs font-mono font-bold text-[#34D399] bg-[#065F46]/50 px-2.5 py-0.5 rounded-full border border-[#059669]">
-              {confidence}% Confidence
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold text-white bg-[#334155] px-2 py-0.5 rounded border border-[#475569]">
+                SOURCE: {(payment as any).diagnosis_source || 'GEMINI_1_5_FLASH'}
+              </span>
+              <span className="text-xs font-mono font-bold text-[#34D399] bg-[#065F46]/50 px-2.5 py-0.5 rounded-full border border-[#059669]">
+                {confidence}% Confidence
+              </span>
+            </div>
           </div>
 
           <p className="text-xs text-[#E2E8F0] leading-relaxed font-sans bg-[#1E293B] p-4 rounded-xl border border-[#334155]">
@@ -343,6 +348,13 @@ export const IncidentDetailPage: React.FC = () => {
                 <strong className="text-xs text-[#0F172A] block mt-0.5">{workflow.attempts} / {workflow.max_attempts}</strong>
               </div>
             </div>
+
+            {(payment as any).settlement_evidence && (
+              <div className="p-3 bg-[#ECFDF5] border border-[#A7F3D0] rounded-xl text-xs font-mono text-[#065F46] space-y-1">
+                <span className="text-[10px] uppercase font-bold text-[#047857] block">Authoritative Settlement Evidence</span>
+                <span className="block font-mono text-[11px] break-all">{(payment as any).settlement_evidence}</span>
+              </div>
+            )}
           </div>
         )}
       </div>

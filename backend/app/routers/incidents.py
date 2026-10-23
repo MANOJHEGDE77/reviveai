@@ -1,25 +1,36 @@
 import random
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.database import get_db
 from app.models import Payment, PaymentEvent, Customer
 from app.schemas import PaymentOut, PaymentDetailOut, PaymentEventOut, CreateIncidentRequest
 from app.recovery_engine import RevenueRecoveryEngine
+from app.auth import require_roles, Role, Operator
+from app.idempotency import IdempotencyManager
 
 router = APIRouter(prefix="/incidents", tags=["Incidents"])
 
 @router.post("", response_model=PaymentDetailOut)
 async def create_custom_incident(
     body: CreateIncidentRequest,
+    operator: Operator = Depends(require_roles([Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
     db: Session = Depends(get_db)
 ):
     """
-    Ingests a real/custom payment failure incident provided by the user.
-    Creates or matches customer using user data, records payment, evaluates
-    deterministic safety guardrails, executes AI recovery, and returns full forensic detail.
+    Ingests a custom payment failure incident.
+    Validates idempotency and evaluates deterministic guardrails with authenticated operator tracking.
     """
+    if idempotency_key:
+        cached = IdempotencyManager.check_or_acquire_lock(
+            db, idempotency_key, "/incidents", body.model_dump()
+        )
+        if cached:
+            status_code, data = cached
+            return data
+
     customer = None
     if body.customer_email:
         customer = db.query(Customer).filter(Customer.email == body.customer_email.strip()).first()
@@ -72,16 +83,19 @@ async def create_custom_incident(
         failure_code=code,
         failure_reason=reason,
         risk_level=risk_level,
-        recovery_probability=0.82
+        recovery_probability=0.82,
+        is_simulated=True
     )
     db.add(payment)
     db.flush()
+
+    acting_identity = f"{operator.name} ({operator.role.value})"
 
     db.add(PaymentEvent(
         payment_id=payment.id,
         event_type="PAYMENT_FAILED",
         description=f"Payment failure of ₹{payment.amount:,.2f} recorded: {reason}",
-        actor="MERCHANT_USER"
+        actor=acting_identity
     ))
     db.commit()
 
@@ -89,14 +103,21 @@ async def create_custom_incident(
         db, payment, auto_execute_if_safe=body.auto_execute
     )
 
-    return get_incident_detail(payment.id, db)
+    detail = get_incident_detail(payment.id, operator, db)
 
+    if idempotency_key:
+        IdempotencyManager.record_completion(
+            db, idempotency_key, 200, PaymentDetailOut.model_validate(detail).model_dump(mode="json")
+        )
+
+    return detail
 
 @router.get("", response_model=List[PaymentOut])
 def list_incidents(
     status: Optional[str] = Query(None, description="Filter by status (FAILED, IN_RECOVERY, RECOVERED, REQUIRES_APPROVAL)"),
     risk_level: Optional[str] = Query(None, description="Filter by risk level (LOW, MEDIUM, HIGH, CRITICAL)"),
     search: Optional[str] = Query(None, description="Search by customer name or payment reference"),
+    operator: Operator = Depends(require_roles([Role.VIEWER, Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
     db: Session = Depends(get_db)
 ):
     query = db.query(Payment).join(Customer, Payment.customer_id == Customer.id)
@@ -117,7 +138,11 @@ def list_incidents(
     return query.order_by(Payment.created_at.desc()).all()
 
 @router.get("/{incident_id}", response_model=PaymentDetailOut)
-def get_incident_detail(incident_id: int, db: Session = Depends(get_db)):
+def get_incident_detail(
+    incident_id: int,
+    operator: Operator = Depends(require_roles([Role.VIEWER, Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
+    db: Session = Depends(get_db)
+):
     payment = db.query(Payment).filter(Payment.id == incident_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Incident not found")
@@ -131,13 +156,16 @@ def get_incident_detail(incident_id: int, db: Session = Depends(get_db)):
 
 @router.post("/{incident_id}/investigate", response_model=PaymentDetailOut)
 @router.post("/{incident_id}/explain", response_model=PaymentDetailOut)
-async def investigate_incident(incident_id: int, db: Session = Depends(get_db)):
+async def investigate_incident(
+    incident_id: int,
+    operator: Operator = Depends(require_roles([Role.OPERATOR, Role.RISK_LEAD, Role.ADMIN])),
+    db: Session = Depends(get_db)
+):
     payment = db.query(Payment).filter(Payment.id == incident_id).first()
     if not payment:
         raise HTTPException(status_code=404, detail="Incident not found")
 
-    # Run AI Investigation & Guardrail validation if needed
     if not payment.ai_recommendation:
         await RevenueRecoveryEngine.process_failed_payment(db, payment, auto_execute_if_safe=False)
 
-    return get_incident_detail(incident_id, db)
+    return get_incident_detail(incident_id, operator, db)

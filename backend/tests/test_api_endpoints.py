@@ -177,7 +177,11 @@ def test_simulation_trigger_resolve_and_demo(client):
     assert len(demo_data["steps_completed"]) == 10
 
 def test_simulation_reset(client):
-    reset_res = client.post("/api/simulation/reset")
+    from app.auth import create_access_token, Operator, Role
+    admin_op = Operator(id="OP-ADM-1", email="admin@reviveai.io", name="System Admin", role=Role.ADMIN)
+    token = create_access_token(admin_op)
+    headers = {"Authorization": f"Bearer {token}"}
+    reset_res = client.post("/api/simulation/reset", headers=headers)
     assert reset_res.status_code == 200
     assert "reset and seeded" in reset_res.json()["message"]
 

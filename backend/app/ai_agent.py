@@ -4,7 +4,12 @@ from typing import Dict, Any, Optional
 import httpx
 from app.config import settings
 from app.models import Payment, Customer
-from app.schemas import AiDiagnosisResult
+from app.schemas import (
+    AiDiagnosisResult,
+    RecoveryStrategyEnum,
+    RiskLevelEnum,
+    DiagnosisSourceEnum
+)
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +18,7 @@ class AiAgentService:
     Autonomous AI Revenue Recovery Agent.
     Implements: Detect -> Understand -> Decide with structured JSON responses.
     Uses Gemini API when configured, with an intelligent deterministic fallback heuristic engine.
+    Guarantees AI output NEVER overrides deterministic business guardrails.
     """
 
     @classmethod
@@ -21,7 +27,6 @@ class AiAgentService:
         Gathers payment and customer context, invokes the AI model or heuristic reasoner,
         and returns a validated structured AiDiagnosisResult.
         """
-        # Controlled context collector (tools simulation)
         context = {
             "payment_ref": payment.payment_ref,
             "amount_inr": payment.amount,
@@ -45,12 +50,20 @@ class AiAgentService:
             try:
                 result = await cls._call_gemini_api(context)
                 if result:
+                    # Enforce hard deterministic bounds over AI model output
+                    result.max_attempts = min(result.max_attempts, 2)
+                    if payment.amount >= settings.APPROVAL_THRESHOLD_INR:
+                        result.requires_approval = True
                     return result
             except Exception as e:
                 logger.warning(f"Gemini API call failed, using heuristic recovery engine: {e}")
 
         # Deterministic Intelligent Heuristic Reasoner
-        return cls._heuristic_reasoning(context)
+        heuristic_res = cls._heuristic_reasoning(context)
+        heuristic_res.max_attempts = min(heuristic_res.max_attempts, 2)
+        if payment.amount >= settings.APPROVAL_THRESHOLD_INR:
+            heuristic_res.requires_approval = True
+        return heuristic_res
 
     @classmethod
     async def _call_gemini_api(cls, context: Dict[str, Any]) -> Optional[AiDiagnosisResult]:
@@ -63,18 +76,18 @@ CONTEXT:
 
 REQUIREMENTS:
 1. Diagnosis: Precise technical and business root cause.
-2. Confidence: Float between 0.0 and 1.0 based on customer history and failure type.
-3. Risk Level: LOW, MEDIUM, HIGH, or CRITICAL.
+2. Confidence: Float strictly between 0.0 and 1.0 based on customer history and failure type.
+3. Risk Level: One of [LOW, MEDIUM, HIGH, CRITICAL].
 4. Recommended Action: One of [DELAYED_RETRY, SMART_ROUTING, DISCOUNTED_CHECKOUT_REENGAGEMENT, UPI_INTENT_SWITCH, CARD_EXPIRY_NOTIFICATION].
 5. Retry After Minutes: Integer cooldown (e.g. 120 for temporary decline, 15 for UPI timeout, 360 for subscription).
-6. Max Attempts: Strictly 2 or fewer.
+6. Max Attempts: Strictly 2 or fewer (integer <= 2).
 7. Requires Approval: true if amount_inr >= 50000 else false.
-8. Reason: Clear, explainable rationale citing customer loyalty, past successes, failure pattern, and historical cohort probability.
+8. Reason: Clear, explainable rationale citing empirical customer history and cohort data.
 9. Evidence Success Count: {context['customer_successful_txns']}
 10. Evidence CLV: {context['customer_ltv_inr']}
 11. Evidence Historical Prob: 0.78-0.92 based on category.
 
-OUTPUT FORMAT: Strict JSON only without markdown code blocks.
+OUTPUT FORMAT: Strict JSON only without markdown formatting.
 """
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.GEMINI_API_KEY}"
         payload = {
@@ -90,6 +103,7 @@ OUTPUT FORMAT: Strict JSON only without markdown code blocks.
                 data = resp.json()
                 text = data["candidates"][0]["content"]["parts"][0]["text"]
                 parsed = json.loads(text)
+                parsed["diagnosis_source"] = DiagnosisSourceEnum.GEMINI_1_5_FLASH
                 return AiDiagnosisResult(**parsed)
         return None
 
@@ -105,8 +119,8 @@ OUTPUT FORMAT: Strict JSON only without markdown code blocks.
             return AiDiagnosisResult(
                 diagnosis="Temporary issuer bank-side decline during settlement authorization window.",
                 confidence=0.88,
-                risk_level="MEDIUM" if requires_appr else "LOW",
-                recommended_action="DELAYED_RETRY",
+                risk_level=RiskLevelEnum.MEDIUM if requires_appr else RiskLevelEnum.LOW,
+                recommended_action=RecoveryStrategyEnum.DELAYED_RETRY,
                 retry_after_minutes=120,
                 max_attempts=2,
                 requires_approval=requires_appr,
@@ -114,14 +128,15 @@ OUTPUT FORMAT: Strict JSON only without markdown code blocks.
                 evidence_success_count=success_txns,
                 evidence_clv=ltv,
                 evidence_historical_prob=0.84,
+                diagnosis_source=DiagnosisSourceEnum.DETERMINISTIC_HEURISTIC,
                 stop_conditions=["PAYMENT_SUCCESS", "MAX_ATTEMPTS_REACHED", "CUSTOMER_OPT_OUT"]
             )
         elif category == "CHECKOUT_ABANDONED":
             return AiDiagnosisResult(
                 diagnosis="Checkout session dropped at payment gateway authentication step.",
                 confidence=0.82,
-                risk_level="LOW",
-                recommended_action="DISCOUNTED_CHECKOUT_REENGAGEMENT",
+                risk_level=RiskLevelEnum.LOW,
+                recommended_action=RecoveryStrategyEnum.DISCOUNTED_CHECKOUT_REENGAGEMENT,
                 retry_after_minutes=30,
                 max_attempts=1,
                 requires_approval=requires_appr,
@@ -129,14 +144,15 @@ OUTPUT FORMAT: Strict JSON only without markdown code blocks.
                 evidence_success_count=success_txns,
                 evidence_clv=ltv,
                 evidence_historical_prob=0.76,
+                diagnosis_source=DiagnosisSourceEnum.DETERMINISTIC_HEURISTIC,
                 stop_conditions=["PAYMENT_SUCCESS", "EXPIRATION_30M"]
             )
         elif category == "SUBSCRIPTION_DECLINE":
             return AiDiagnosisResult(
                 diagnosis="Recurring mandate execution failure due to card expiry or pre-debit authorization lapse.",
                 confidence=0.91,
-                risk_level="HIGH" if requires_appr else "MEDIUM",
-                recommended_action="CARD_EXPIRY_NOTIFICATION",
+                risk_level=RiskLevelEnum.HIGH if requires_appr else RiskLevelEnum.MEDIUM,
+                recommended_action=RecoveryStrategyEnum.CARD_EXPIRY_NOTIFICATION,
                 retry_after_minutes=360,
                 max_attempts=2,
                 requires_approval=requires_appr,
@@ -144,14 +160,15 @@ OUTPUT FORMAT: Strict JSON only without markdown code blocks.
                 evidence_success_count=success_txns,
                 evidence_clv=ltv,
                 evidence_historical_prob=0.89,
+                diagnosis_source=DiagnosisSourceEnum.DETERMINISTIC_HEURISTIC,
                 stop_conditions=["PAYMENT_SUCCESS", "MANUAL_UPDATE", "MAX_ATTEMPTS_REACHED"]
             )
         elif category == "NETWORK_TIMEOUT":
             return AiDiagnosisResult(
                 diagnosis="Gateway network timeout (HTTP 504) during UPI intent handshake.",
                 confidence=0.94,
-                risk_level="LOW",
-                recommended_action="UPI_INTENT_SWITCH",
+                risk_level=RiskLevelEnum.LOW,
+                recommended_action=RecoveryStrategyEnum.UPI_INTENT_SWITCH,
                 retry_after_minutes=15,
                 max_attempts=2,
                 requires_approval=requires_appr,
@@ -159,14 +176,15 @@ OUTPUT FORMAT: Strict JSON only without markdown code blocks.
                 evidence_success_count=success_txns,
                 evidence_clv=ltv,
                 evidence_historical_prob=0.93,
+                diagnosis_source=DiagnosisSourceEnum.DETERMINISTIC_HEURISTIC,
                 stop_conditions=["PAYMENT_SUCCESS", "MAX_ATTEMPTS_REACHED"]
             )
         else: # OVERDUE_INVOICE, REPEAT_DECLINE, etc.
             return AiDiagnosisResult(
                 diagnosis="Persistent decline pattern or invoice overdue.",
                 confidence=0.79,
-                risk_level="HIGH",
-                recommended_action="SMART_ROUTING",
+                risk_level=RiskLevelEnum.HIGH,
+                recommended_action=RecoveryStrategyEnum.SMART_ROUTING,
                 retry_after_minutes=180,
                 max_attempts=2,
                 requires_approval=requires_appr,
@@ -174,5 +192,7 @@ OUTPUT FORMAT: Strict JSON only without markdown code blocks.
                 evidence_success_count=success_txns,
                 evidence_clv=ltv,
                 evidence_historical_prob=0.72,
+                diagnosis_source=DiagnosisSourceEnum.DETERMINISTIC_HEURISTIC,
                 stop_conditions=["PAYMENT_SUCCESS", "APPROVAL_REJECTED"]
             )
+

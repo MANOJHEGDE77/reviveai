@@ -25,6 +25,19 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  // Attach correlation ID to every outbound request
+  const correlationId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  config.headers['X-Correlation-ID'] = correlationId;
+
+  // Attach JWT Bearer token if stored
+  const token = localStorage.getItem('reviveai_token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const formatINR = (amount: number, compact = false): string => {
   if (amount === undefined || amount === null) return '₹0';
   if (compact) {
@@ -82,8 +95,26 @@ export const apiClient = {
     return res.data;
   },
 
+  // Auth & RBAC
+  getCurrentOperator: async (): Promise<{ operator: any; roles_available: string[] }> => {
+    const res = await api.get('/auth/me');
+    return res.data;
+  },
+
+  switchRole: async (role: 'VIEWER' | 'OPERATOR' | 'RISK_LEAD' | 'ADMIN'): Promise<{ access_token: string; operator: any }> => {
+    const res = await api.post(`/auth/switch-role?role=${role}`);
+    if (res.data?.access_token) {
+      localStorage.setItem('reviveai_token', res.data.access_token);
+      localStorage.setItem('reviveai_role', role);
+    }
+    return res.data;
+  },
+
   executeWorkflowAction: async (id: number): Promise<RecoveryAction> => {
-    const res = await api.post<RecoveryAction>(`/recovery/${id}/execute`);
+    const idempotencyKey = `exec_${Date.now()}_wf${id}`;
+    const res = await api.post<RecoveryAction>(`/recovery/${id}/execute`, {}, {
+      headers: { 'Idempotency-Key': idempotencyKey }
+    });
     return res.data;
   },
 
@@ -94,10 +125,12 @@ export const apiClient = {
   },
 
   decideApproval: async (id: number, decision: 'APPROVE' | 'REJECT', operator_notes?: string): Promise<ApprovalRequest> => {
+    const idempotencyKey = `appr_${Date.now()}_id${id}`;
     const res = await api.post<ApprovalRequest>(`/approvals/${id}/decision`, {
       decision,
       operator_notes,
-      decision_by: 'Risk Lead (SecOps)',
+    }, {
+      headers: { 'Idempotency-Key': idempotencyKey }
     });
     return res.data;
   },
