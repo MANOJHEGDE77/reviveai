@@ -355,6 +355,9 @@ class RevenueRecoveryEngine:
         if not approval:
             raise ValueError(f"ApprovalRequest {approval_id} not found")
 
+        if approval.status != "PENDING":
+            raise ValueError(f"ApprovalRequest {approval_id} is already in terminal state '{approval.status}' and cannot be modified.")
+
         approval.status = "APPROVED" if decision.upper() == "APPROVE" else "REJECTED"
         approval.decision_by = decision_by
         approval.decision_notes = operator_notes or f"Manual decision: {decision}"

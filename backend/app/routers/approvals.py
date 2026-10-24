@@ -71,7 +71,8 @@ def decide_approval(
     except ValueError as e:
         if idempotency_key:
             IdempotencyManager.release_on_failure(db, idempotency_key)
-        raise HTTPException(status_code=404, detail=str(e))
+        status_c = 400 if "terminal state" in str(e) else 404
+        raise HTTPException(status_code=status_c, detail=str(e))
     except Exception as e:
         if idempotency_key:
             IdempotencyManager.release_on_failure(db, idempotency_key)

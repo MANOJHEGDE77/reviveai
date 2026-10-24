@@ -43,16 +43,23 @@ class IdempotencyManager:
         req_hash = hash_payload(request_data)
 
         if record:
-            if record.status == "COMPLETED":
-                # Return cached payload
-                cached = json.loads(record.response_body) if record.response_body else {}
-                return (record.response_code or 200, cached)
-
             if record.status == "PROCESSING":
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail=f"Idempotency conflict: An identical request with key '{idempotency_key}' is actively being processed."
                 )
+
+            # Payment industry standard: If key was previously used with different request parameters, reject with 409 Conflict
+            if record.request_hash and req_hash != "none" and record.request_hash != "none" and record.request_hash != req_hash:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Idempotency conflict: Key '{idempotency_key}' was previously used with different request parameters."
+                )
+
+            if record.status == "COMPLETED":
+                # Return cached payload
+                cached = json.loads(record.response_body) if record.response_body else {}
+                return (record.response_code or 200, cached)
 
         # Acquire lock: Record new entry in PROCESSING state
         new_record = IdempotencyRecord(

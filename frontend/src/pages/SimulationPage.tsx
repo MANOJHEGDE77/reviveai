@@ -31,6 +31,7 @@ export const SimulationPage: React.FC = () => {
   const [customMethod, setCustomMethod] = useState('CARD');
   const [customLoading, setCustomLoading] = useState(false);
   const [customResult, setCustomResult] = useState<Payment | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 1-Click Live Narrative Demo
   const [demoLoading, setDemoLoading] = useState(false);
@@ -89,6 +90,7 @@ export const SimulationPage: React.FC = () => {
 
   const handleStartSimulation = async () => {
     try {
+      setErrorMessage(null);
       setCustomLoading(true);
       const res = await apiClient.triggerSimulation({
         customer_name: customCustomer,
@@ -98,8 +100,10 @@ export const SimulationPage: React.FC = () => {
         auto_execute: true,
       });
       setCustomResult(res);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      const detail = err?.response?.data?.detail || 'Simulation trigger failed. Please check operator permissions.';
+      setErrorMessage(detail);
     } finally {
       setCustomLoading(false);
     }
@@ -107,11 +111,14 @@ export const SimulationPage: React.FC = () => {
 
   const handleRunLiveRecoveryDemo = async () => {
     try {
+      setErrorMessage(null);
       setDemoLoading(true);
       const res = await apiClient.runDemoScenario();
       setDemoResult(res);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      const detail = err?.response?.data?.detail || 'Demo scenario execution failed.';
+      setErrorMessage(detail);
     } finally {
       setDemoLoading(false);
     }
@@ -119,6 +126,18 @@ export const SimulationPage: React.FC = () => {
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
+      {errorMessage && (
+        <div className="p-3.5 bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl text-xs text-[#B91C1C] font-mono flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-bold">&#9888; SIMULATION FAILED:</span>
+            <span>{errorMessage}</span>
+          </div>
+          <button onClick={() => setErrorMessage(null)} className="text-[#B91C1C] hover:text-[#7F1D1D] font-bold">
+            &times;
+          </button>
+        </div>
+      )}
+
       {/* 1. Header */}
       <div className="pb-3 border-b border-[#DCD8CF] flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
         <div>

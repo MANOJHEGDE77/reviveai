@@ -26,7 +26,7 @@ class GuardrailEngine:
         
         Returns: (is_permitted, status_code, reason_explanation)
         """
-        # Rule 0: Auto-Termination check - never retry settled payments
+        # Rule 0: Auto-Termination check - never retry settled payments or terminal workflows
         if payment.status == "RECOVERED":
             return (
                 False,
@@ -34,15 +34,14 @@ class GuardrailEngine:
                 f"Payment {payment.payment_ref} has already been settled and recovered. Subsequent recovery attempts strictly prohibited."
             )
 
-        # Rule 1: High-Value Governance Threshold (Escalation to Human Operator)
-        if payment.amount >= settings.APPROVAL_THRESHOLD_INR:
+        if workflow and workflow.status in ["RESOLVED", "EXPIRED", "REJECTED"]:
             return (
-                True, # Permitted to initiate approval workflow
-                "ESCALATED_HIGH_VALUE",
-                f"Transaction amount ₹{payment.amount:,.2f} meets or exceeds governance threshold (₹{settings.APPROVAL_THRESHOLD_INR:,.2f}). Human sign-off mandated via /approvals."
+                False,
+                f"BLOCKED_WORKFLOW_{workflow.status}",
+                f"Workflow {workflow.workflow_ref} is in terminal state '{workflow.status}'. Further action execution is prohibited."
             )
 
-        # Rule 2: Strict Autonomous Retry Bound (≤ 2 attempts)
+        # Rule 1: Strict Autonomous Retry Bound (<= 2 attempts) - applies to all workflows
         if workflow and workflow.attempts >= settings.MAX_RETRIES:
             return (
                 False,
@@ -50,7 +49,7 @@ class GuardrailEngine:
                 f"Workflow {workflow.workflow_ref} has reached maximum autonomous attempt ceiling ({settings.MAX_RETRIES} attempts). Action blocked to prevent cardholder spamming."
             )
 
-        # Rule 3: Recovery Window Deadline (24-Hour Bounded Action Window)
+        # Rule 2: Recovery Window Deadline (24-Hour Bounded Action Window) - applies to all workflows
         if workflow:
             now_utc = datetime.now(timezone.utc)
             deadline = workflow.deadline_time
@@ -62,6 +61,15 @@ class GuardrailEngine:
                     "BLOCKED_RECOVERY_WINDOW_EXPIRED",
                     f"Workflow {workflow.workflow_ref} exceeded 24-hour recovery window. Stale payment retry locked."
                 )
+
+        # Rule 3: High-Value Governance Threshold (Escalation to Human Operator)
+        # Transactions >= INR 50,000 mandate human sign-off unless workflow has already been approved
+        if payment.amount >= settings.APPROVAL_THRESHOLD_INR and (not workflow or workflow.status != "ACTIVE"):
+            return (
+                True, # Permitted to initiate approval workflow
+                "ESCALATED_HIGH_VALUE",
+                f"Transaction amount ₹{payment.amount:,.2f} meets or exceeds governance threshold (₹{settings.APPROVAL_THRESHOLD_INR:,.2f}). Human sign-off mandated via /approvals."
+            )
 
         # Rule 4: Action Rate-Limiting & Duplicate Outreach Guard
         if action_type == "RECOVERY_SMS_EMAIL" and workflow and workflow.attempts >= 1:
@@ -88,6 +96,8 @@ class GuardrailEngine:
         if workflow and workflow.attempts >= settings.MAX_RETRIES:
             return False
         if payment.status == "RECOVERED":
+            return False
+        if workflow and workflow.status in ["RESOLVED", "EXPIRED", "REJECTED"]:
             return False
         if workflow:
             now_utc = datetime.now(timezone.utc)

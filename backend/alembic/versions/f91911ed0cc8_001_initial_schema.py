@@ -21,6 +21,12 @@ def upgrade() -> None:
     inspector = sa.inspect(bind)
     tables = inspector.get_table_names()
 
+    # If payments table does not exist, this is a clean database boot
+    if 'payments' not in tables:
+        from app.database import Base
+        Base.metadata.create_all(bind=bind)
+        return
+
     if 'idempotency_records' not in tables:
         op.create_table('idempotency_records',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -38,33 +44,36 @@ def upgrade() -> None:
         op.create_index(op.f('ix_idempotency_records_idempotency_key'), 'idempotency_records', ['idempotency_key'], unique=True)
         op.create_index(op.f('ix_idempotency_records_status'), 'idempotency_records', ['status'], unique=False)
 
-    payment_cols = [c['name'] for c in inspector.get_columns('payments')]
-    if 'diagnosis_source' not in payment_cols:
-        op.add_column('payments', sa.Column('diagnosis_source', sa.String(length=64), server_default="DETERMINISTIC_HEURISTIC", nullable=False))
-    if 'is_simulated' not in payment_cols:
-        op.add_column('payments', sa.Column('is_simulated', sa.Boolean(), server_default="1", nullable=False))
-    if 'settlement_evidence' not in payment_cols:
-        op.add_column('payments', sa.Column('settlement_evidence', sa.String(length=512), nullable=True))
+    if 'payments' in tables:
+        payment_cols = [c['name'] for c in inspector.get_columns('payments')]
+        if 'diagnosis_source' not in payment_cols:
+            op.add_column('payments', sa.Column('diagnosis_source', sa.String(length=64), server_default="DETERMINISTIC_HEURISTIC", nullable=False))
+        if 'is_simulated' not in payment_cols:
+            op.add_column('payments', sa.Column('is_simulated', sa.Boolean(), server_default="1", nullable=False))
+        if 'settlement_evidence' not in payment_cols:
+            op.add_column('payments', sa.Column('settlement_evidence', sa.String(length=512), nullable=True))
 
-    action_cols = [c['name'] for c in inspector.get_columns('recovery_actions')]
-    if 'provider' not in action_cols:
-        op.add_column('recovery_actions', sa.Column('provider', sa.String(length=64), server_default="SIMULATION", nullable=False))
-    if 'provider_action_ref' not in action_cols:
-        op.add_column('recovery_actions', sa.Column('provider_action_ref', sa.String(length=128), nullable=True))
-    if 'is_simulated' not in action_cols:
-        op.add_column('recovery_actions', sa.Column('is_simulated', sa.Boolean(), server_default="1", nullable=False))
-    if 'idempotency_key' not in action_cols:
-        op.add_column('recovery_actions', sa.Column('idempotency_key', sa.String(length=128), nullable=True))
-        op.create_index(op.f('ix_recovery_actions_idempotency_key'), 'recovery_actions', ['idempotency_key'], unique=False)
+    if 'recovery_actions' in tables:
+        action_cols = [c['name'] for c in inspector.get_columns('recovery_actions')]
+        if 'provider' not in action_cols:
+            op.add_column('recovery_actions', sa.Column('provider', sa.String(length=64), server_default="SIMULATION", nullable=False))
+        if 'provider_action_ref' not in action_cols:
+            op.add_column('recovery_actions', sa.Column('provider_action_ref', sa.String(length=128), nullable=True))
+        if 'is_simulated' not in action_cols:
+            op.add_column('recovery_actions', sa.Column('is_simulated', sa.Boolean(), server_default="1", nullable=False))
+        if 'idempotency_key' not in action_cols:
+            op.add_column('recovery_actions', sa.Column('idempotency_key', sa.String(length=128), nullable=True))
+            op.create_index(op.f('ix_recovery_actions_idempotency_key'), 'recovery_actions', ['idempotency_key'], unique=False)
 
-    wf_cols = [c['name'] for c in inspector.get_columns('recovery_workflows')]
-    if 'scheduled_execution_at' not in wf_cols:
-        op.add_column('recovery_workflows', sa.Column('scheduled_execution_at', sa.DateTime(), nullable=True))
-    if 'is_simulated' not in wf_cols:
-        op.add_column('recovery_workflows', sa.Column('is_simulated', sa.Boolean(), server_default="1", nullable=False))
-    if 'idempotency_key' not in wf_cols:
-        op.add_column('recovery_workflows', sa.Column('idempotency_key', sa.String(length=128), nullable=True))
-        op.create_index(op.f('ix_recovery_workflows_idempotency_key'), 'recovery_workflows', ['idempotency_key'], unique=False)
+    if 'recovery_workflows' in tables:
+        wf_cols = [c['name'] for c in inspector.get_columns('recovery_workflows')]
+        if 'scheduled_execution_at' not in wf_cols:
+            op.add_column('recovery_workflows', sa.Column('scheduled_execution_at', sa.DateTime(), nullable=True))
+        if 'is_simulated' not in wf_cols:
+            op.add_column('recovery_workflows', sa.Column('is_simulated', sa.Boolean(), server_default="1", nullable=False))
+        if 'idempotency_key' not in wf_cols:
+            op.add_column('recovery_workflows', sa.Column('idempotency_key', sa.String(length=128), nullable=True))
+            op.create_index(op.f('ix_recovery_workflows_idempotency_key'), 'recovery_workflows', ['idempotency_key'], unique=False)
 
 
 def downgrade() -> None:

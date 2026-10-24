@@ -24,6 +24,7 @@ export const RecoveryPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [executingId, setExecutingId] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchWorkflows = async () => {
     try {
@@ -51,11 +52,14 @@ export const RecoveryPage: React.FC = () => {
   const handleExecute = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
     try {
+      setErrorMessage(null);
       setExecutingId(id);
       await apiClient.executeWorkflowAction(id);
       await fetchWorkflows();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      const detail = err?.response?.data?.detail || 'Recovery step execution failed.';
+      setErrorMessage(detail);
     } finally {
       setExecutingId(null);
     }
@@ -86,6 +90,18 @@ export const RecoveryPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
+      {errorMessage && (
+        <div className="p-3.5 bg-[#FEE2E2] border border-[#FCA5A5] rounded-xl text-xs text-[#B91C1C] font-mono flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-bold">&#9888; RECOVERY ACTION BLOCKED:</span>
+            <span>{errorMessage}</span>
+          </div>
+          <button onClick={() => setErrorMessage(null)} className="text-[#B91C1C] hover:text-[#7F1D1D] font-bold">
+            &times;
+          </button>
+        </div>
+      )}
+
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-3 border-b border-[#DCD8CF]">
         <div>

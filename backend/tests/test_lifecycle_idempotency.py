@@ -383,3 +383,245 @@ def test_re_evaluation_guardrail_before_action_execution():
         assert status == "BLOCKED_PAYMENT_ALREADY_RECOVERED"
     finally:
         db.close()
+
+
+def test_idempotency_key_reuse_different_payload_returns_409(client, operator_headers):
+    """Sending the same Idempotency-Key with different request parameters triggers 409 Conflict."""
+    idem_key = "idemp-test-mismatch-key-999"
+    headers = {**operator_headers, "Idempotency-Key": idem_key}
+
+    payload_a = {
+        "customer_name": "First Payload Retailer",
+        "customer_email": "first@retail.in",
+        "amount": 10000.0,
+        "failure_category": "TEMPORARY_DECLINE",
+        "payment_method_type": "CARD",
+        "auto_execute": False
+    }
+
+    payload_b = {
+        "customer_name": "Second Different Retailer",
+        "customer_email": "second@retail.in",
+        "amount": 25000.0,
+        "failure_category": "NETWORK_TIMEOUT",
+        "payment_method_type": "UPI",
+        "auto_execute": False
+    }
+
+    # First request succeeds
+    res1 = client.post("/api/incidents", json=payload_a, headers=headers)
+    assert res1.status_code == 200
+
+    # Second request with SAME key but DIFFERENT payload must fail with 409 Conflict
+    res2 = client.post("/api/incidents", json=payload_b, headers=headers)
+    assert res2.status_code == 409
+    assert "different request parameters" in res2.json()["detail"]
+
+
+def test_terminal_approval_cannot_be_re_decided(client, risk_lead_headers):
+    """Once an approval is resolved (APPROVED or REJECTED), subsequent attempts are rejected."""
+    # 1. Ingest a high-value transaction to create a pending approval
+    res = client.post("/api/simulation/trigger", json={
+        "customer_name": "Enterprise Mandate Hub",
+        "amount": 80000.0,
+        "failure_category": "SUBSCRIPTION_DECLINE",
+        "auto_execute": False
+    }, headers=risk_lead_headers)
+    assert res.status_code == 200
+
+    # 2. Get pending approval
+    appr_res = client.get("/api/approvals?status=PENDING", headers=risk_lead_headers)
+    approvals = appr_res.json()
+    assert len(approvals) > 0
+    appr_id = approvals[0]["id"]
+
+    # 3. First decision: APPROVE
+    dec_res1 = client.post(
+        f"/api/approvals/{appr_id}/decision",
+        json={"decision": "APPROVE", "operator_notes": "First valid sign-off"},
+        headers=risk_lead_headers
+    )
+    assert dec_res1.status_code == 200
+    assert dec_res1.json()["status"] == "APPROVED"
+
+    # 4. Second decision attempt on already resolved approval must fail with 400
+    dec_res2 = client.post(
+        f"/api/approvals/{appr_id}/decision",
+        json={"decision": "REJECT", "operator_notes": "Attempting invalid reversal"},
+        headers=risk_lead_headers
+    )
+    assert dec_res2.status_code == 400
+    assert "already in terminal state" in dec_res2.json()["detail"]
+
+
+def test_terminal_workflow_action_blocked_by_guardrails():
+    """Guardrails block execution on workflows that are in terminal states (RESOLVED, EXPIRED, REJECTED)."""
+    db = TestingSessionLocal()
+    try:
+        cust = Customer(
+            customer_ref="CUS_TERM_1",
+            name="Terminal Customer",
+            email="term@corp.in",
+            payment_method_masked="•••• 9999",
+            payment_method_type="CARD",
+            lifetime_value=15000.0,
+            successful_transactions=2,
+            failed_transactions=1,
+            health_score=80
+        )
+        db.add(cust)
+        db.flush()
+
+        payment = Payment(
+            payment_ref="PAY_TERM_1",
+            customer_id=cust.id,
+            amount=8000.0,
+            currency="INR",
+            status="FAILED",
+            failure_category="TEMPORARY_DECLINE",
+            risk_level="LOW"
+        )
+        db.add(payment)
+        db.flush()
+
+        # Terminal workflow: RESOLVED
+        wf_resolved = RecoveryWorkflow(
+            workflow_ref="RV-TERM-01",
+            payment_id=payment.id,
+            trigger_reason="Test",
+            strategy="DELAYED_RETRY",
+            current_step="RESOLVED",
+            attempts=1,
+            max_attempts=2,
+            status="RESOLVED"
+        )
+        permitted, status, _ = GuardrailEngine.evaluate_proposed_action(payment, wf_resolved, "DELAYED_RETRY")
+        assert permitted is False
+        assert status == "BLOCKED_WORKFLOW_RESOLVED"
+
+        # Terminal workflow: EXPIRED
+        wf_expired = RecoveryWorkflow(
+            workflow_ref="RV-TERM-02",
+            payment_id=payment.id,
+            trigger_reason="Test",
+            strategy="DELAYED_RETRY",
+            current_step="EXPIRED",
+            attempts=1,
+            max_attempts=2,
+            status="EXPIRED"
+        )
+        permitted, status, _ = GuardrailEngine.evaluate_proposed_action(payment, wf_expired, "DELAYED_RETRY")
+        assert permitted is False
+        assert status == "BLOCKED_WORKFLOW_EXPIRED"
+
+        # Terminal workflow: REJECTED
+        wf_rejected = RecoveryWorkflow(
+            workflow_ref="RV-TERM-03",
+            payment_id=payment.id,
+            trigger_reason="Test",
+            strategy="DELAYED_RETRY",
+            current_step="REJECTED",
+            attempts=1,
+            max_attempts=2,
+            status="REJECTED"
+        )
+        permitted, status, _ = GuardrailEngine.evaluate_proposed_action(payment, wf_rejected, "DELAYED_RETRY")
+        assert permitted is False
+        assert status == "BLOCKED_WORKFLOW_REJECTED"
+    finally:
+        db.close()
+
+
+def test_durable_scheduler_expiration_records_audit_and_event():
+    """Scheduler records both a PaymentEvent and AuditLog when expiring stale workflows."""
+    db = TestingSessionLocal()
+    try:
+        from app.models import PaymentEvent, AuditLog
+        cust = Customer(
+            customer_ref="CUS_SCHED_AUDIT_1",
+            name="Audit Expiration Cust",
+            email="audit.exp@corp.in",
+            payment_method_masked="•••• 5555",
+            payment_method_type="CARD",
+            lifetime_value=22000.0,
+            successful_transactions=3,
+            failed_transactions=1,
+            health_score=85
+        )
+        db.add(cust)
+        db.flush()
+
+        payment = Payment(
+            payment_ref="PAY_SCHED_AUDIT_1",
+            customer_id=cust.id,
+            amount=15000.0,
+            currency="INR",
+            status="IN_RECOVERY",
+            failure_category="TEMPORARY_DECLINE",
+            risk_level="MEDIUM"
+        )
+        db.add(payment)
+        db.flush()
+
+        stale_wf = RecoveryWorkflow(
+            workflow_ref="RV-SCHED-AUDIT-01",
+            payment_id=payment.id,
+            trigger_reason="Stale test",
+            strategy="DELAYED_RETRY",
+            current_step="WAITING",
+            attempts=1,
+            max_attempts=2,
+            deadline_time=datetime.now(timezone.utc) - timedelta(hours=2),
+            status="WAITING"
+        )
+        db.add(stale_wf)
+        db.commit()
+
+        # Run scheduler
+        DurableRecoveryScheduler.process_due_workflows(db)
+
+        # Verify PaymentEvent exists
+        events = db.query(PaymentEvent).filter(
+            PaymentEvent.payment_id == payment.id,
+            PaymentEvent.event_type == "WORKFLOW_EXPIRED"
+        ).all()
+        assert len(events) == 1
+        assert "DURABLE_SCHEDULER" in events[0].actor
+
+        # Verify AuditLog exists
+        audits = db.query(AuditLog).filter(
+            AuditLog.payment_ref == payment.payment_ref,
+            AuditLog.event_type == "WORKFLOW_EXPIRATION"
+        ).all()
+        assert len(audits) == 1
+        assert audits[0].guardrail_result == "EXPIRED_RECOVERY_WINDOW"
+    finally:
+        db.close()
+
+
+def test_alembic_upgrade_on_clean_isolated_database():
+    """Validates that Alembic migration completes successfully on a brand-new, clean database file."""
+    import tempfile, os, alembic.config, alembic.command
+    tmp_db = tempfile.mktemp(suffix=".db")
+    eng = None
+    try:
+        cfg = alembic.config.Config("alembic.ini")
+        cfg.set_main_option("sqlalchemy.url", f"sqlite:///{tmp_db}")
+        alembic.command.upgrade(cfg, "head")
+
+        # Verify tables exist
+        import sqlalchemy as sa
+        eng = sa.create_engine(f"sqlite:///{tmp_db}")
+        insp = sa.inspect(eng)
+        tables = insp.get_table_names()
+        assert "payments" in tables
+        assert "recovery_workflows" in tables
+        assert "idempotency_records" in tables
+    finally:
+        if eng:
+            eng.dispose()
+        try:
+            if os.path.exists(tmp_db):
+                os.remove(tmp_db)
+        except OSError:
+            pass

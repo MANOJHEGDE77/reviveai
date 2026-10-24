@@ -119,6 +119,12 @@ async def trigger_simulated_payment_event(
     events = db.query(PaymentEvent).filter(PaymentEvent.payment_id == payment.id).order_by(PaymentEvent.created_at.asc()).all()
     detail = PaymentDetailOut.model_validate(payment)
     detail.events = events
+
+    if idempotency_key:
+        IdempotencyManager.record_completion(
+            db, idempotency_key, 200, PaymentDetailOut.model_validate(detail).model_dump(mode="json")
+        )
+
     return detail
 
 @router.post("/resolve/{payment_id}", response_model=PaymentDetailOut)
