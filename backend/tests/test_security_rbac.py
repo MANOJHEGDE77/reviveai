@@ -57,6 +57,19 @@ def test_auth_login_invalid_password(client):
     })
     assert res.status_code == 401
 
+def test_auth_me_endpoint(client):
+    op = Operator(id="OP-RL-TEST", email="risk.lead@reviveai.io", name="Aditi Rao", role=Role.RISK_LEAD)
+    token = create_access_token(op)
+    headers = {"Authorization": f"Bearer {token}"}
+    res = client.get("/api/auth/me", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["id"] == "OP-RL-TEST"
+    assert data["role"] == "RISK_LEAD"
+    assert data["operator"]["role"] == "RISK_LEAD"
+    assert "RISK_LEAD" in data["roles_available"]
+    assert "ADMIN" in data["roles_available"]
+
 def test_unauthenticated_requests_rejected_in_strict_mode(client):
     # Enable strict auth
     original_strict = settings.STRICT_AUTH

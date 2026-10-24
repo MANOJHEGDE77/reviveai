@@ -3,6 +3,7 @@ from app.auth import (
     Operator,
     LoginRequest,
     TokenResponse,
+    OperatorProfileResponse,
     Role,
     OPERATORS_STORE,
     _hash_password,
@@ -48,10 +49,19 @@ def login(body: LoginRequest):
         expires_in_seconds=86400
     )
 
-@router.get("/me", response_model=Operator)
+
+@router.get("/me", response_model=OperatorProfileResponse)
 def get_current_user(operator: Operator = Depends(get_current_operator)):
     """Returns the currently authenticated operator identity and assigned RBAC role."""
-    return operator
+    return OperatorProfileResponse(
+        id=operator.id,
+        email=operator.email,
+        name=operator.name,
+        role=operator.role,
+        is_active=operator.is_active,
+        operator=operator,
+        roles_available=[r.value for r in Role]
+    )
 
 @router.post("/switch-role", response_model=TokenResponse)
 def switch_operator_role_for_demo(role: Role):

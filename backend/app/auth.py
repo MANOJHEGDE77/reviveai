@@ -41,6 +41,15 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+class OperatorProfileResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    role: Role
+    is_active: bool = True
+    operator: Operator
+    roles_available: List[str]
+
 # --- Secret Configuration ---
 JWT_SECRET = os.getenv("REVIVEAI_JWT_SECRET", "reviveai-super-secret-sovereign-key-2026-production")
 JWT_ALGORITHM = "HS256"
