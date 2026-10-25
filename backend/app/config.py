@@ -29,6 +29,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://reviveai.vercel.app",
+        "https://reviveai-zeta.vercel.app",
         "https://reviveai-rcptftndp-kannimmhegde123-5360s-projects.vercel.app"
     ]
     STRICT_AUTH: bool = False

@@ -10,13 +10,11 @@ ReviveAI is built for high-performance cloud deployment. The frontend and backen
 ┌────────────────────────────────────────────────────────┐       API Requests (HTTPS)       ┌──────────────────────────────────────┐
 │                FRONTEND & API (Vercel)                 │ ───────────────────────────────> │      BACKEND SERVERLESS (FastAPI)    │
 │  React 18 + Vite + Tailwind + SPA                      │                                  │  FastAPI + SQLAlchemy + Guardrails    │
-│  Base URL: https://reviveai-rcptftndp-kannimmhegde123-5360s-projects.vercel.app │  Path: /api/*                        │
+│  Base URL: https://reviveai-zeta.vercel.app            │                                  │  Path: /api/*                        │
 └────────────────────────────────────────────────────────┘                                  └──────────────────────────────────────┘
 ```
 
-> **Live Production Deployment**: [https://reviveai-rcptftndp-kannimmhegde123-5360s-projects.vercel.app](https://reviveai-rcptftndp-kannimmhegde123-5360s-projects.vercel.app)
->
-> 💡 **Public Access Note**: If your Vercel deployment returns a `401 Protected by Vercel Authentication` screen to external visitors, go to your Vercel Project Dashboard $\to$ **Settings** $\to$ **Deployment Protection** and set Vercel Authentication to **Disabled** (or "Only Preview Deployments").
+> **Live Production Deployment**: [https://reviveai-zeta.vercel.app](https://reviveai-zeta.vercel.app)
 
 ---
 
