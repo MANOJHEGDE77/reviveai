@@ -10,14 +10,17 @@ import { ApprovalsPage } from './pages/ApprovalsPage';
 import { AuditPage } from './pages/AuditPage';
 import { SimulationPage } from './pages/SimulationPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { LaunchVideoPage } from './pages/LaunchVideoPage';
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 1. PUBLIC LANDING PAGE (STANDALONE, NO APPLICATION NAVBAR) */}
+        {/* 1. PUBLIC LANDING PAGE & LAUNCH VIDEO (STANDALONE, NO APPLICATION NAVBAR) */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/landing" element={<LandingPage />} />
+        <Route path="/launch-video" element={<LaunchVideoPage />} />
+        <Route path="/video" element={<Navigate to="/launch-video" replace />} />
 
         {/* 2. AUTHENTICATED APPLICATION CONSOLE (WITH FULL NAVIGATION & WORKSPACES) */}
         <Route element={<Layout />}>

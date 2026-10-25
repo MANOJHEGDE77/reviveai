@@ -37,9 +37,16 @@ import {
 import { apiClient, formatINR, formatDateTime } from '../api/client';
 import { DashboardSummary, Payment, ApprovalRequest, AuditLog, DemoScenarioResult } from '../types';
 import { BrandLogo } from '../components/BrandLogo';
+import { LaunchVideoModal } from '../components/LaunchVideoModal';
+import { ThreeCanvasHero } from '../components/ThreeCanvasHero';
+import { ThreePaymentGlobe } from '../components/ThreePaymentGlobe';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+
+  // 0. Launch Video & 3D Hero Mode State
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [heroViewMode, setHeroViewMode] = useState<'3d' | 'console'>('3d');
 
   // 1. Data States
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -307,8 +314,21 @@ export const LandingPage: React.FC = () => {
           </a>
         </nav>
 
-        {/* Console Action */}
-        <div className="flex items-center gap-3">
+        {/* Header Actions */}
+        <div className="flex items-center gap-2.5">
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] font-bold">
+            <Sparkles className="w-3 h-3 text-cyan-400" />
+            <span>3D WebGL Live</span>
+          </span>
+
+          <button
+            onClick={() => setVideoModalOpen(true)}
+            className="px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-[#111216] bg-white border border-[#DCD8CF] hover:border-[#111216] hover:bg-[#F4F1E9] transition flex items-center gap-1.5 shadow-xs"
+          >
+            <Play className="w-3 h-3 text-[#168F5A] fill-[#168F5A]" />
+            <span>Launch Video</span>
+          </button>
+
           <button
             onClick={() => navigate('/journey')}
             className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-[#111216] hover:bg-[#23262D] transition flex items-center gap-2 shadow-sm"
@@ -368,14 +388,14 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-4 pt-4 font-mono text-xs">
-              <a
-                href="#how-it-works"
-                className="px-6 py-3 rounded-xl font-semibold text-white bg-[#111216] hover:bg-[#23262D] transition flex items-center gap-2 shadow-sm"
+            <div className="flex flex-wrap items-center gap-3 pt-4 font-mono text-xs">
+              <button
+                onClick={() => setVideoModalOpen(true)}
+                className="px-5 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-[#06B6D4] to-[#10B981] hover:from-[#0891B2] hover:to-[#059669] transition flex items-center gap-2 shadow-md shadow-cyan-500/20"
               >
-                <span>Explore the system</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </a>
+                <Play className="w-3.5 h-3.5 fill-white" />
+                <span>Watch Launch Film (18.5s)</span>
+              </button>
 
               <button
                 onClick={() => navigate('/journey')}
@@ -384,6 +404,14 @@ export const LandingPage: React.FC = () => {
                 <Zap className="w-3.5 h-3.5 text-[#168F5A]" />
                 <span>Open live console</span>
               </button>
+
+              <a
+                href="#how-it-works"
+                className="px-4 py-3 rounded-xl font-semibold text-[#666A6B] hover:text-[#111216] transition flex items-center gap-1.5"
+              >
+                <span>Architecture</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </a>
             </div>
 
             {/* Quick Metrics Bar */}
@@ -420,21 +448,57 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Realistic Floating Product Interface Panel */}
-          <div className="lg:col-span-6">
-            <div className="editorial-panel p-5 sm:p-6 bg-white space-y-4 relative border border-[#DCD8CF]">
-              {/* Window Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#EDE9E0]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#168F5A] animate-pulse" />
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#111216]">
-                    RECONCILIATION ENGINE &bull; LIVE RUNTIME
+          {/* Right Column: 3D Holographic Core OR Operations Console */}
+          <div className="lg:col-span-6 space-y-3">
+            {/* View Mode Switcher */}
+            <div className="flex items-center justify-between">
+              <div className="inline-flex p-1 rounded-xl bg-white border border-[#DCD8CF] shadow-xs text-xs font-mono">
+                <button
+                  onClick={() => setHeroViewMode('3d')}
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition font-bold ${
+                    heroViewMode === '3d'
+                      ? 'bg-[#111216] text-white shadow-xs'
+                      : 'text-[#666A6B] hover:text-[#111216]'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
+                  <span>3D Hologram Core</span>
+                </button>
+
+                <button
+                  onClick={() => setHeroViewMode('console')}
+                  className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition font-bold ${
+                    heroViewMode === 'console'
+                      ? 'bg-[#111216] text-white shadow-xs'
+                      : 'text-[#666A6B] hover:text-[#111216]'
+                  }`}
+                >
+                  <Sliders className="w-3.5 h-3.5 text-[#168F5A]" />
+                  <span>Operations Console</span>
+                </button>
+              </div>
+
+              <span className="text-[11px] font-mono text-[#666A6B] hidden sm:inline">
+                Three.js WebGL &bull; 60 FPS
+              </span>
+            </div>
+
+            {heroViewMode === '3d' ? (
+              <ThreeCanvasHero onInteract={() => {}} />
+            ) : (
+              <div className="editorial-panel p-5 sm:p-6 bg-white space-y-4 relative border border-[#DCD8CF]">
+                {/* Window Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-[#EDE9E0]">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#168F5A] animate-pulse" />
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#111216]">
+                      RECONCILIATION ENGINE &bull; LIVE RUNTIME
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#EAF5EE] text-[#168F5A] border border-[#B9E2CD]">
+                    Guardrails Active (Cap &le; 2)
                   </span>
                 </div>
-                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#EAF5EE] text-[#168F5A] border border-[#B9E2CD]">
-                  Guardrails Active (Cap &le; 2)
-                </span>
-              </div>
 
               {/* A. Revenue Recovery Summary Strip */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-left font-mono">
@@ -652,6 +716,41 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
             </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 2.5 Dedicated 3D Sovereign Financial Topology & Global Payment Mesh */}
+      <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[#DCD8CF]">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 pb-8 border-b border-[#DCD8CF]">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF5EE] border border-[#B9E2CD] text-[11px] font-mono font-bold text-[#168F5A] uppercase">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>3D SPATIAL TELEMETRY ARCHITECTURE</span>
+            </div>
+            <h2 className="editorial-headline text-3xl sm:text-4xl text-[#111216] mt-2">
+              Sovereign Multi-Gateway 3D Recovery Mesh
+            </h2>
+            <p className="text-sm text-[#666A6B] mt-1 max-w-2xl font-sans">
+              Interact with the live 3D topology of payment networks. The autonomous agent continuously monitors switches, identifies latency spikes, and reroutes transactions through optimal recovery corridors.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 font-mono text-xs">
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-[#DCD8CF] shadow-xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#168F5A] animate-pulse" />
+              <span className="font-bold text-[#111216]">Deterministic Guardrails Active</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8 items-center">
+          <div className="lg:col-span-7">
+            <ThreeCanvasHero />
+          </div>
+          <div className="lg:col-span-5 space-y-6">
+            <ThreePaymentGlobe />
           </div>
         </div>
       </section>
@@ -1468,7 +1567,10 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center gap-6 text-[11px]">
             <a href="#product" className="hover:text-[#111216]">Product</a>
             <a href="#how-it-works" className="hover:text-[#111216]">How it works</a>
-            <a href="#analytics" className="hover:text-[#111216]">Analytics</a>
+            <button onClick={() => setVideoModalOpen(true)} className="hover:text-[#111216] flex items-center gap-1">
+              <Play className="w-2.5 h-2.5 fill-current text-[#168F5A]" />
+              <span>Launch Film</span>
+            </button>
             <button onClick={() => navigate('/audit')} className="hover:text-[#111216]">Audit Ledger</button>
             <button onClick={() => navigate('/approvals')} className="hover:text-[#111216]">Approvals</button>
           </div>
@@ -1478,6 +1580,12 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* 7. Product Launch Video Modal */}
+      <LaunchVideoModal
+        isOpen={videoModalOpen}
+        onClose={() => setVideoModalOpen(false)}
+      />
     </div>
   );
 };

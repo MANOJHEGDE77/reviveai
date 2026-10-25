@@ -14,7 +14,8 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](docker-compose.yml)
 
-🌐 **Live Vercel Deployment**: [https://reviveai-zeta.vercel.app](https://reviveai-zeta.vercel.app)
+🌐 **Live Vercel Deployment**: [https://reviveai-zeta.vercel.app](https://reviveai-zeta.vercel.app)  
+🎬 **Cinematic Launch Video (18.5s)**: [Interactive Web Player](file:///c:/Users/kanni/IdeaProjects/Aimodel3/frontend/public/launch_video.html) &bull; [Broadcast MP4](file:///c:/Users/kanni/IdeaProjects/Aimodel3/reviveai_product_launch.mp4) &bull; [Briefing Document](file:///C:/Users/kanni/.gemini/antigravity-ide/brain/d8e0c738-108b-48ff-9ae4-824b35abb573/reviveai_product_launch_briefing.md)
 
 **ReviveAI** is a production-grade autonomous revenue recovery system for merchants. It transforms passive payment monitoring into an active financial intelligence engine by implementing a closed-loop agentic lifecycle:
 

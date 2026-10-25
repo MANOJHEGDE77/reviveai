@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReviveAI — Product Launch Video (18.5s Cinematic)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: #030712;
+      color: #F8FAFC;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.12) 0%, rgba(79, 70, 229, 0.08) 35%, transparent 70%);
+    }
+
+    /* Header Bar */
+    .top-header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      z-index: 10;
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #38BDF8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 8px #10B981;
+      animation: pulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      background: #070A12;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px -10px rgba(6, 182, 212, 0.2);
+      z-index: 10;
+      cursor: pointer;
+    }
+
+    canvas#videoCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Overlay Controls */
+    .overlay-hud {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .hud-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: rgba(11, 15, 25, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-badge span.active-scene {
+      color: #38BDF8;
+      font-weight: 700;
+    }
+
+    .big-play-btn {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 2px solid rgba(56, 189, 248, 0.6);
+      color: #38BDF8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 35px rgba(6, 182, 212, 0.4);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 25;
+      cursor: pointer;
+    }
+
+    .big-play-btn:hover {
+      transform: scale(1.08);
+      background: rgba(6, 182, 212, 0.25);
+      border-color: #38BDF8;
+      color: #FFF;
+      box-shadow: 0 0 50px rgba(6, 182, 212, 0.7);
+    }
+
+    .big-play-btn svg {
+      width: 32px;
+      height: 32px;
+      margin-left: 4px;
+      fill: currentColor;
+    }
+
+    /* Player Controls Bar */
+    .controls-panel {
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 14px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    /* Progress & Scrubber Bar */
+    .timeline-wrap {
+      width: 100%;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .timeline-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .timeline-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38BDF8, #818CF8, #10B981);
+      border-radius: 3px;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+      transition: width 0.05s linear;
+    }
+
+    .timeline-markers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: flex;
+    }
+
+    .marker-segment {
+      height: 100%;
+      border-right: 2px solid #070A12;
+      position: relative;
+    }
+
+    .timeline-scrubber-handle {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      width: 14px;
+      height: 14px;
+      background: #FFFFFF;
+      border: 2px solid #38BDF8;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
+      pointer-events: none;
+      transition: left 0.05s linear;
+    }
+
+    /* Bottom Control Buttons */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .controls-left, .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #E2E8F0;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #FFF;
+      transform: translateY(-1px);
+    }
+
+    .ctrl-btn.active {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: #38BDF8;
+      color: #38BDF8;
+    }
+
+    .time-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .time-current {
+      color: #F8FAFC;
+      font-weight: 700;
+    }
+
+    /* Scene Chips */
+    .scenes-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .scene-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94A3B8;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .scene-chip:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #F1F5F9;
+    }
+
+    .scene-chip.active {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #38BDF8;
+      font-weight: 700;
+    }
+
+    .export-btn {
+      background: linear-gradient(135deg, #06B6D4, #3B82F6);
+      border: none;
+      color: #FFFFFF;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+    }
+
+    .export-btn:hover {
+      background: linear-gradient(135deg, #0891B2, #2563EB);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6);
+    }
+
+    /* Info Bar */
+    .info-bar {
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .info-card {
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+
+    .info-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748B;
+      margin-bottom: 4px;
+    }
+
+    .info-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E2E8F0;
+    }
+
+    @media (max-width: 768px) {
+      .scenes-nav {
+        display: none;
+      }
+      .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-left, .controls-right {
+        justify-content: space-between;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="top-header">
+    <div class="brand-title-wrap">
+      <svg width="34" height="34" viewBox="0 0 64 64" fill="none">
+        <rect width="64" height="64" rx="14" fill="#0F172A" stroke="#38BDF8" stroke-width="2" />
+        <path d="M 18 46 L 18 18 L 26 18 L 26 46 Z" fill="#38BDF8" />
+        <path d="M 26 18 L 36 18 C 42 18 46 22 46 28 C 46 34 42 38 36 38 L 26 38 Z" fill="#4F46E5" />
+        <path d="M 32 34 L 44 46 L 47 40 L 37 32 Z" fill="#10B981" />
+        <polygon points="46,14 48,18 52,20 48,22 46,26 44,22 40,20 44,18" fill="#38BDF8" />
+      </svg>
+      <div>
+        <h1 style="font-size: 18px; font-weight: 800; letter-spacing: -0.02em;">ReviveAI Product Launch</h1>
+        <p style="font-size: 12px; color: #94A3B8;">Autonomous AI Payment Failure Detection & Recovery &bull; Official 18.5s Cinematic Launch</p>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="brand-badge">
+        <span class="pulse-dot"></span>
+        <span>BROADCAST READY // 60 FPS</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main 16:9 Video Player Canvas -->
+  <div class="video-container" id="videoWrapper">
+    <canvas id="videoCanvas" width="1920" height="1080"></canvas>
+
+    <!-- Overlay HUD -->
+    <div class="overlay-hud">
+      <div class="hud-badge">
+        <span style="display:inline-block; width:6px; height:6px; background:#38BDF8; border-radius:50%;"></span>
+        <span>REVIVEAI CINEMATIC ENGINE</span>
+        <span style="opacity: 0.4;">|</span>
+        <span id="sceneIndicator" class="active-scene">SCENE 1: THE PROBLEM</span>
+      </div>
+
+      <div class="hud-badge" id="hudAudioStatus">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <span>SYNTH AUDIO ON</span>
+      </div>
+    </div>
+
+    <!-- Big Center Play Button (hidden when playing) -->
+    <div class="big-play-btn" id="bigPlayBtn">
+      <svg viewBox="0 0 24 24">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Player Controls Panel -->
+  <div class="controls-panel">
+    <!-- Timeline Scrubber -->
+    <div class="timeline-wrap" id="timelineWrap">
+      <div class="timeline-track">
+        <div class="timeline-fill" id="timelineFill"></div>
+        <div class="timeline-markers">
+          <div class="marker-segment" style="width: 16.2%;"></div> <!-- 0 - 3.0s -->
+          <div class="marker-segment" style="width: 16.2%;"></div> <!-- 3.0 - 6.0s -->
+          <div class="marker-segment" style="width: 27.0%;"></div> <!-- 6.0 - 11.0s -->
+          <div class="marker-segment" style="width: 21.6%;"></div> <!-- 11.0 - 15.0s -->
+          <div class="marker-segment" style="width: 19.0%;"></div> <!-- 15.0 - 18.5s -->
+        </div>
+      </div>
+      <div class="timeline-scrubber-handle" id="scrubberHandle"></div>
+    </div>
+
+    <!-- Controls Row -->
+    <div class="controls-row">
+      <div class="controls-left">
+        <button class="ctrl-btn" id="playPauseBtn">
+          <svg id="playIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span id="playBtnText">Play</span>
+        </button>
+
+        <button class="ctrl-btn" id="restartBtn" title="Restart Video">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 4v6h6M23 20v-6h-6"></path>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+          </svg>
+          <span>Restart</span>
+        </button>
+
+        <div class="time-display">
+          <span class="time-current" id="timeCurrent">00:00.00</span>
+          <span>/</span>
+          <span>00:18.50</span>
+        </div>
+      </div>
+
+      <!-- Scene Jump Chips -->
+      <div class="scenes-nav">
+        <button class="scene-chip active" data-time="0">01 Problem (0-3s)</button>
+        <button class="scene-chip" data-time="3">02 Meet ReviveAI (3-6s)</button>
+        <button class="scene-chip" data-time="6">03 Key Features (6-11s)</button>
+        <button class="scene-chip" data-time="11">04 Smart & Safe (11-15s)</button>
+        <button class="scene-chip" data-time="15">05 Impact (15-18.5s)</button>
+      </div>
+
+      <div class="controls-right">
+        <button class="ctrl-btn" id="muteBtn" title="Toggle Audio Synthesizer">
+          <span id="muteBtnLabel">Sound: ON</span>
+        </button>
+
+        <button class="ctrl-btn" id="fsBtn" title="Toggle Fullscreen">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+        </button>
+
+        <button class="ctrl-btn export-btn" id="downloadMp4Btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Get MP4 Video</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Information / Specifications Grid -->
+  <div class="info-bar">
+    <div class="info-card">
+      <div class="info-title">Pacing & Duration</div>
+      <div class="info-val">18.5 Seconds &bull; 60 FPS UHD</div>
+    </div>
+    <div class="info-card">
+      <div class="info-title">Sound Design</div>
+      <div class="info-val">Procedural Electronic Synth &amp; Risers</div>
+    </div>
+    <div class="info-card">
+      <div class="info-title">Deterministic Guardrails</div>
+      <div class="info-val">&le;2 Retries &bull; &ge;&#8377;50K Approval &bull; 24h Window</div>
+    </div>
+    <div class="info-card">
+      <div class="info-title">Live Deployment</div>
+      <div class="info-val">reviveai-zeta.vercel.app</div>
+    </div>
+  </div>
+
+  <!-- Cinema Engine & Web Audio Script -->
+  <script>
+    // -------------------------------------------------------------
+    // REVIVEAI CINEMATIC ENGINE: 18.5 SECOND HIGH-FIDELITY LAUNCH
+    // -------------------------------------------------------------
+    const TOTAL_DURATION = 18.5; // Exactly 18.5 seconds
+    const canvas = document.getElementById('videoCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1920;
+    const H = 1080;
+
+    let currentTime = 0;
+    let isPlaying = false;
+    let lastTimestamp = 0;
+    let audioMuted = false;
+
+    // DOM Elements
+    const videoWrapper = document.getElementById('videoWrapper');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const playBtnText = document.getElementById('playBtnText');
+    const bigPlayBtn = document.getElementById('bigPlayBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const timeCurrent = document.getElementById('timeCurrent');
+    const timelineWrap = document.getElementById('timelineWrap');
+    const timelineFill = document.getElementById('timelineFill');
+    const scrubberHandle = document.getElementById('scrubberHandle');
+    const sceneIndicator = document.getElementById('sceneIndicator');
+    const sceneChips = document.querySelectorAll('.scene-chip');
+    const muteBtn = document.getElementById('muteBtn');
+    const muteBtnLabel = document.getElementById('muteBtnLabel');
+    const hudAudioStatus = document.getElementById('hudAudioStatus');
+    const fsBtn = document.getElementById('fsBtn');
+    const downloadMp4Btn = document.getElementById('downloadMp4Btn');
+
+    // -------------------------------------------------------------
+    // PROCEDURAL WEB AUDIO SYNTHESIZER
+    // -------------------------------------------------------------
+    let audioCtx = null;
+    let soundEventsFired = {};
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, duration, type = 'sine', gainVal = 0.25, decay = true) {
+      if (!audioCtx || audioMuted) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        if (decay) {
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        }
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playSubDrop(startFreq = 120, endFreq = 35, duration = 1.4, gainVal = 0.4) {
+      if (!audioCtx || audioMuted) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playCyberRiser(duration = 2.0) {
+      if (!audioCtx || audioMuted) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(950, audioCtx.currentTime + duration);
+        gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + duration * 0.85);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playAlertSting() {
+      if (!audioCtx || audioMuted) return;
+      playTone(880, 0.15, 'sawtooth', 0.28);
+      setTimeout(() => playTone(587.33, 0.25, 'sawtooth', 0.25), 120);
+      setTimeout(() => playTone(440, 0.4, 'square', 0.2), 240);
+    }
+
+    function playChimeMajor() {
+      if (!audioCtx || audioMuted) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+      notes.forEach((freq, idx) => {
+        setTimeout(() => {
+          playTone(freq, 0.6, 'sine', 0.22);
+        }, idx * 75);
+      });
+    }
+
+    function playGuardrailLock(step) {
+      if (!audioCtx || audioMuted) return;
+      const freqs = [330, 440, 554.37, 659.25]; // E4, A4, C#5, E5
+      playTone(freqs[step % 4], 0.35, 'triangle', 0.3);
+      playTone(80, 0.15, 'sine', 0.4); // thud
+    }
+
+    function playGrandOutro() {
+      if (!audioCtx || audioMuted) return;
+      playSubDrop(150, 30, 2.5, 0.5);
+      const chord = [261.63, 329.63, 392.00, 523.25, 659.25]; // C major 7
+      chord.forEach(f => playTone(f, 2.2, 'sine', 0.18));
+      setTimeout(() => {
+        [783.99, 1046.50, 1567.98].forEach((f, i) => {
+          setTimeout(() => playTone(f, 1.2, 'triangle', 0.15), i * 90);
+        });
+      }, 300);
+    }
+
+    // Trigger audio at precise timestamps
+    function triggerAudioEvents(t) {
+      if (t >= 0.1 && !soundEventsFired['sub_intro']) {
+        soundEventsFired['sub_intro'] = true;
+        playSubDrop(80, 45, 1.8, 0.3);
+      }
+      if (t >= 1.6 && !soundEventsFired['alert_fail']) {
+        soundEventsFired['alert_fail'] = true;
+        playAlertSting();
+      }
+      if (t >= 3.0 && !soundEventsFired['riser_logo']) {
+        soundEventsFired['riser_logo'] = true;
+        playCyberRiser(2.0);
+        playSubDrop(140, 38, 2.0, 0.45);
+      }
+      if (t >= 6.0 && !soundEventsFired['features_start']) {
+        soundEventsFired['features_start'] = true;
+        playChimeMajor();
+      }
+      if (t >= 7.8 && !soundEventsFired['step_ai_decide']) {
+        soundEventsFired['step_ai_decide'] = true;
+        playTone(660, 0.25, 'sine', 0.25);
+      }
+      if (t >= 9.2 && !soundEventsFired['explainable_pop']) {
+        soundEventsFired['explainable_pop'] = true;
+        playTone(880, 0.3, 'triangle', 0.22);
+      }
+      if (t >= 11.2 && !soundEventsFired['guard_1']) {
+        soundEventsFired['guard_1'] = true;
+        playGuardrailLock(0);
+      }
+      if (t >= 12.0 && !soundEventsFired['guard_2']) {
+        soundEventsFired['guard_2'] = true;
+        playGuardrailLock(1);
+      }
+      if (t >= 12.8 && !soundEventsFired['guard_3']) {
+        soundEventsFired['guard_3'] = true;
+        playGuardrailLock(2);
+      }
+      if (t >= 13.6 && !soundEventsFired['guard_4']) {
+        soundEventsFired['guard_4'] = true;
+        playGuardrailLock(3);
+      }
+      if (t >= 15.0 && !soundEventsFired['settled_impact']) {
+        soundEventsFired['settled_impact'] = true;
+        playChimeMajor();
+        playSubDrop(130, 40, 2.0, 0.45);
+      }
+      if (t >= 16.2 && !soundEventsFired['grand_outro']) {
+        soundEventsFired['grand_outro'] = true;
+        playGrandOutro();
+      }
+    }
+
+    function resetAudioEventsAfter(timeSec) {
+      Object.keys(soundEventsFired).forEach(k => {
+        // clear fired events that occur after current time
+        const eventTimes = {
+          'sub_intro': 0.1,
+          'alert_fail': 1.6,
+          'riser_logo': 3.0,
+          'features_start': 6.0,
+          'step_ai_decide': 7.8,
+          'explainable_pop': 9.2,
+          'guard_1': 11.2,
+          'guard_2': 12.0,
+          'guard_3': 12.8,
+          'guard_4': 13.6,
+          'settled_impact': 15.0,
+          'grand_outro': 16.2
+        };
+        if (eventTimes[k] > timeSec) {
+          delete soundEventsFired[k];
+        }
+      });
+    }
+
+    // -------------------------------------------------------------
+    // PARTICLE & STARFIELD BACKGROUND SYSTEM
+    // -------------------------------------------------------------
+    const particles = [];
+    for (let i = 0; i < 90; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8,
+        size: Math.random() * 2.2 + 0.8,
+        alpha: Math.random() * 0.6 + 0.2,
+        color: i % 3 === 0 ? '#06B6D4' : (i % 3 === 1 ? '#38BDF8' : '#818CF8')
+      });
+    }
+
+    function renderParticles(t) {
+      for (let p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H;
+        if (p.y > H) p.y = 0;
+
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha * (0.6 + 0.4 * Math.sin(t * 3 + p.x));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
+    }
+
+    // -------------------------------------------------------------
+    // DRAWING HELPER FUNCTIONS
+    // -------------------------------------------------------------
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function drawReviveAILogo(x, y, size, progress = 1.0, glow = true) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      const s = size / 64;
+      ctx.scale(s, s);
+      ctx.translate(-32, -32);
+
+      // Background Squircle
+      const bgGrad = ctx.createLinearGradient(0, 0, 64, 64);
+      bgGrad.addColorStop(0, '#0B0F19');
+      bgGrad.addColorStop(0.5, '#0F172A');
+      bgGrad.addColorStop(1, '#020617');
+
+      ctx.fillStyle = bgGrad;
+      roundRect(ctx, 2, 2, 60, 60, 16);
+      ctx.fill();
+
+      // Border with Cyan/Indigo gradient
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      if (glow) {
+        ctx.shadowColor = '#06B6D4';
+        ctx.shadowBlur = 24 * progress;
+      }
+
+      // Vertical Pillar
+      const ribbonGrad = ctx.createLinearGradient(0, 64, 64, 0);
+      ribbonGrad.addColorStop(0, '#4F46E5');
+      ribbonGrad.addColorStop(0.4, '#3B82F6');
+      ribbonGrad.addColorStop(0.8, '#06B6D4');
+      ribbonGrad.addColorStop(1, '#38BDF8');
+
+      ctx.fillStyle = ribbonGrad;
+
+      // Pillar
+      ctx.beginPath();
+      ctx.moveTo(17, 46);
+      ctx.lineTo(17, 19);
+      ctx.arcTo(17, 16, 20, 16, 2);
+      ctx.lineTo(22.5, 16);
+      ctx.arcTo(25, 16, 25, 18.5, 2.5);
+      ctx.lineTo(25, 43.5);
+      ctx.arcTo(25, 46, 22.5, 46, 2.5);
+      ctx.closePath();
+      ctx.fill();
+
+      // Loop Arc
+      ctx.beginPath();
+      ctx.moveTo(23, 16);
+      ctx.lineTo(33, 16);
+      ctx.bezierCurveTo(39, 16, 43.5, 20.4, 43.5, 26.5);
+      ctx.bezierCurveTo(43.5, 32.5, 39, 36, 33, 36);
+      ctx.lineTo(24, 36);
+      ctx.arcTo(22, 36, 22, 34, 2);
+      ctx.lineTo(22, 31);
+      ctx.arcTo(22, 29, 24, 29, 2);
+      ctx.lineTo(32.5, 29);
+      ctx.bezierCurveTo(35.2, 29, 37, 27.6, 37, 25.5);
+      ctx.bezierCurveTo(37, 23.3, 35.2, 22, 32.5, 22);
+      ctx.lineTo(23, 22);
+      ctx.closePath();
+      ctx.fill();
+
+      // Dynamic Recovery Arrow (Emerald)
+      const arrowGrad = ctx.createLinearGradient(0, 0, 64, 64);
+      arrowGrad.addColorStop(0, '#06B6D4');
+      arrowGrad.addColorStop(0.5, '#10B981');
+      arrowGrad.addColorStop(1, '#34D399');
+
+      ctx.fillStyle = arrowGrad;
+      ctx.beginPath();
+      ctx.moveTo(29.5, 32.5);
+      ctx.lineTo(41.5, 44.8);
+      ctx.bezierCurveTo(42.4, 45.7, 43.9, 45.4, 44.4, 44.2);
+      ctx.lineTo(47, 38);
+      ctx.lineTo(41, 38.5);
+      ctx.lineTo(34, 31);
+      ctx.closePath();
+      ctx.fill();
+
+      // Spark Telemetry Diamond
+      ctx.fillStyle = '#38BDF8';
+      ctx.beginPath();
+      ctx.moveTo(45, 14);
+      ctx.lineTo(47.5, 18);
+      ctx.lineTo(51.5, 20.5);
+      ctx.lineTo(47.5, 23);
+      ctx.lineTo(45, 27);
+      ctx.lineTo(42.5, 23);
+      ctx.lineTo(38.5, 20.5);
+      ctx.lineTo(42.5, 18);
+      ctx.closePath();
+      ctx.fill();
+
+      // Spark Center core
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(45, 20.5, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // -------------------------------------------------------------
+    // SCENE 1: THE PROBLEM (0.0s – 3.0s)
+    // -------------------------------------------------------------
+    function renderScene1(t) {
+      const rel = t; // 0 to 3.0
+      sceneIndicator.innerText = "SCENE 1: THE PROBLEM";
+
+      // Dark futuristic fintech grid background
+      ctx.fillStyle = '#070A12';
+      ctx.fillRect(0, 0, W, H);
+
+      renderParticles(t);
+
+      // Subtle perspective grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 80) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += 80) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+
+      // Camera pan / tilt motion
+      const camY = 30 * Math.sin(rel * 0.8);
+      ctx.save();
+      ctx.translate(0, camY);
+
+      // Top Telemetry Header
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      roundRect(ctx, 240, 80, W - 480, 56, 12);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.stroke();
+
+      ctx.font = '700 13px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillText('LIVE PAYMENT INGESTION // GATEWAY MONITORING', 270, 114);
+
+      ctx.font = '500 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillText('ACTIVE GATEWAYS: RAZORPAY &bull; STRIPE &bull; UPI PSP', W - 660, 114);
+
+      // Main Dashboard Viewport
+      const isFailed = rel >= 1.5;
+      const failAnim = isFailed ? Math.min((rel - 1.5) / 0.4, 1.0) : 0;
+
+      // Glow pulse around main panel if failed
+      if (isFailed) {
+        ctx.shadowColor = '#EF4444';
+        ctx.shadowBlur = 35 * (0.8 + 0.2 * Math.sin(rel * 14));
+      }
+
+      // Financial Transaction Card
+      ctx.fillStyle = isFailed ? 'rgba(28, 12, 16, 0.95)' : 'rgba(15, 23, 42, 0.9)';
+      roundRect(ctx, 240, 160, W - 480, 520, 20);
+      ctx.fill();
+      ctx.shadowBlur = 0; // reset
+
+      ctx.strokeStyle = isFailed ? `rgba(239, 68, 68, ${0.4 + 0.6 * failAnim})` : 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = isFailed ? 2.5 : 1.5;
+      ctx.stroke();
+
+      // Card Header
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#64748B';
+      ctx.fillText('TRANSACTION TELEMETRY #TXN-984210', 280, 210);
+
+      ctx.font = '800 36px "Inter", sans-serif';
+      ctx.fillStyle = '#F8FAFC';
+      ctx.fillText('₹42,500.00 INR', 280, 265);
+
+      ctx.font = '500 16px "Inter", sans-serif';
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillText('Merchant: Enterprise Cloud Platform &bull; Customer: Rahul Sharma (LTV: ₹2,40,000)', 280, 305);
+
+      // Status Badge
+      const badgeX = W - 530;
+      const badgeY = 225;
+      if (!isFailed) {
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.15)';
+        roundRect(ctx, badgeX, badgeY, 190, 44, 22);
+        ctx.fill();
+        ctx.strokeStyle = '#EAB308';
+        ctx.stroke();
+
+        ctx.font = '700 13px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#FACC15';
+        ctx.fillText('● PROCESSING...', badgeX + 25, badgeY + 28);
+      } else {
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.22)';
+        roundRect(ctx, badgeX - 20, badgeY, 210, 44, 22);
+        ctx.fill();
+        ctx.strokeStyle = '#EF4444';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = '800 13px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#EF4444';
+        ctx.fillText('✖ PAYMENT FAILED', badgeX + 5, badgeY + 28);
+      }
+
+      // Divider
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(280, 345);
+      ctx.lineTo(W - 280, 345);
+      ctx.stroke();
+
+      // Telemetry Breakdown Rows
+      const rows = [
+        { label: 'Payment Gateway', val: 'HDFC Bank PSP / UPI Gateway' },
+        { label: 'Latency Recorded', val: '4,820 ms (Timeout Threshold Exceeded)' },
+        { label: 'Error Code', val: isFailed ? 'PSP_NETWORK_TIMEOUT // GATEWAY_DROP' : 'IN_FLIGHT' },
+        { label: 'Direct Impact', val: isFailed ? 'Immediate Cart Abandonment & Lost ARR' : 'Pending Bank Settlement' }
+      ];
+
+      rows.forEach((r, idx) => {
+        const ry = 390 + idx * 60;
+        ctx.font = '600 13px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#64748B';
+        ctx.fillText(r.label, 280, ry);
+
+        ctx.font = '700 15px "JetBrains Mono", monospace';
+        ctx.fillStyle = (idx === 2 && isFailed) ? '#EF4444' : (idx === 3 && isFailed ? '#F87171' : '#E2E8F0');
+        ctx.fillText(r.val, 540, ry);
+      });
+
+      // BIG CINEMATIC IMPACT TEXT (Bottom Banner)
+      // "Failed payments. Lost revenue."
+      const textAlpha = Math.min(rel / 0.8, 1.0);
+      ctx.fillStyle = `rgba(255, 255, 255, ${textAlpha})`;
+      ctx.font = '900 68px "Inter", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = isFailed ? '#EF4444' : '#000000';
+      ctx.shadowBlur = isFailed ? 30 : 15;
+      ctx.fillText('Failed payments. Lost revenue.', W / 2, 790);
+
+      ctx.shadowBlur = 0;
+      ctx.font = '500 22px "Inter", sans-serif';
+      ctx.fillStyle = isFailed ? '#FCA5A5' : '#94A3B8';
+      ctx.fillText(
+        isFailed ? 'High-value customer transactions fail silently every day.' : 'Monitoring merchant payment health in real time...',
+        W / 2,
+        840
+      );
+      ctx.textAlign = 'left'; // reset
+
+      ctx.restore();
+    }
+
+    // -------------------------------------------------------------
+    // SCENE 2: MEET REVIVEAI (3.0s – 6.0s)
+    // -------------------------------------------------------------
+    function renderScene2(t) {
+      const rel = t - 3.0; // 0 to 3.0
+      sceneIndicator.innerText = "SCENE 2: MEET REVIVEAI";
+
+      // Dark obsidian background with vibrant radial nebula
+      ctx.fillStyle = '#050811';
+      ctx.fillRect(0, 0, W, H);
+
+      renderParticles(t);
+
+      // Pulsing cosmic radial background
+      const radGrad = ctx.createRadialGradient(W / 2, H / 2 - 40, 20, W / 2, H / 2 - 40, 600);
+      radGrad.addColorStop(0, 'rgba(6, 182, 212, 0.22)');
+      radGrad.addColorStop(0.4, 'rgba(79, 70, 229, 0.15)');
+      radGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = radGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Scale in animation
+      const scale = Math.min(0.7 + rel * 0.12, 1.0);
+      const alpha = Math.min(rel / 0.5, 1.0);
+
+      ctx.save();
+      ctx.translate(W / 2, H / 2 - 80);
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = alpha;
+
+      // Rotating energy ring
+      ctx.save();
+      ctx.rotate(rel * 0.8);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([12, 16]);
+      ctx.beginPath();
+      ctx.arc(0, 0, 160, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.3)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 190, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Render the iconic ReviveAI logo
+      drawReviveAILogo(0, 0, 220, alpha, true);
+
+      ctx.restore();
+
+      // Typography
+      ctx.textAlign = 'center';
+
+      // "Meet ReviveAI"
+      ctx.save();
+      const textY = H / 2 + 150;
+      ctx.font = '900 76px "Inter", sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.shadowColor = '#38BDF8';
+      ctx.shadowBlur = 40;
+      ctx.fillText('Meet ReviveAI', W / 2, textY);
+
+      // Tagline: "Intelligent Payment Recovery"
+      ctx.shadowBlur = 20;
+      ctx.font = '700 34px "Inter", sans-serif';
+      const gradTag = ctx.createLinearGradient(W / 2 - 300, 0, W / 2 + 300, 0);
+      gradTag.addColorStop(0, '#38BDF8');
+      gradTag.addColorStop(0.5, '#818CF8');
+      gradTag.addColorStop(1, '#10B981');
+      ctx.fillStyle = gradTag;
+      ctx.fillText('Intelligent Payment Recovery', W / 2, textY + 60);
+
+      // Sub-badge pill
+      ctx.shadowBlur = 0;
+      const pillY = textY + 110;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+      roundRect(ctx, W / 2 - 270, pillY, 540, 42, 21);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillText('AUTONOMOUS AI AGENT &bull; DETERMINISTIC SAFETY GUARDRAILS', W / 2, pillY + 26);
+
+      ctx.restore();
+      ctx.textAlign = 'left';
+    }
+
+    // -------------------------------------------------------------
+    // SCENE 3: KEY FEATURES (6.0s – 11.0s)
+    // Rapidly showcase AI Diagnosis, Strategy, Agentic Loop & Explainable AI
+    // -------------------------------------------------------------
+    function renderScene3(t) {
+      const rel = t - 6.0; // 0 to 5.0s
+      sceneIndicator.innerText = "SCENE 3: KEY FEATURES";
+
+      ctx.fillStyle = '#060913';
+      ctx.fillRect(0, 0, W, H);
+      renderParticles(t);
+
+      // Section Top Header
+      ctx.font = '800 14px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#10B981';
+      ctx.fillText('// AGENTIC INTELLIGENCE ENGINE &bull; 6-STAGE AUTONOMOUS LOOP', 120, 80);
+
+      // 6-Stage Loop Ticker across top
+      const stages = ['DETECT', 'UNDERSTAND', 'DECIDE', 'ACT', 'VERIFY', 'LEARN'];
+      const activeStageIdx = Math.min(Math.floor(rel * 1.3), 5);
+
+      const loopWidth = W - 240;
+      const stepW = loopWidth / 6;
+
+      stages.forEach((stg, i) => {
+        const sx = 120 + i * stepW;
+        const isActive = i <= activeStageIdx;
+        const isCurrent = i === activeStageIdx;
+
+        ctx.fillStyle = isCurrent ? 'rgba(6, 182, 212, 0.25)' : (isActive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.04)');
+        roundRect(ctx, sx + 6, 105, stepW - 12, 38, 8);
+        ctx.fill();
+        ctx.strokeStyle = isCurrent ? '#38BDF8' : (isActive ? '#10B981' : 'rgba(255, 255, 255, 0.08)');
+        ctx.lineWidth = isCurrent ? 2 : 1;
+        ctx.stroke();
+
+        ctx.font = '700 12px "JetBrains Mono", monospace';
+        ctx.fillStyle = isCurrent ? '#38BDF8' : (isActive ? '#10B981' : '#64748B');
+        ctx.fillText(`${i + 1}. ${stg}`, sx + 22, 129);
+      });
+
+      // Split Screen Layout: Left = Diagnosis & Strategy, Right = Explainable AI Card
+      const leftW = 800;
+      const rightW = W - 240 - leftW - 30;
+
+      // LEFT CARD 1: Real-Time AI Diagnosis
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      roundRect(ctx, 120, 175, leftW, 360, 16);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+      ctx.stroke();
+
+      ctx.font = '800 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillText('01 // AI-POWERED FAILURE DIAGNOSIS', 150, 215);
+
+      ctx.font = '700 24px "Inter", sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText('Root Cause Signature Detected', 150, 255);
+
+      // Diagnostic Items
+      const diagItems = [
+        { key: 'Failure Signature', val: 'PSP_NETWORK_TIMEOUT (Transitory Bank Congestion)' },
+        { key: 'Customer Trust Profile', val: 'Rahul Sharma &bull; 16 Past Settled (High LTV Tier)' },
+        { key: 'Historical Yield Rate', val: '78% Cohort Recovery Rate on 14m Window' },
+        { key: 'Model Confidence', val: '94.8% Certainty Score' }
+      ];
+
+      diagItems.forEach((d, idx) => {
+        const dy = 300 + idx * 48;
+        ctx.font = '600 12px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#64748B';
+        ctx.fillText(d.key, 150, dy);
+
+        ctx.font = '700 14px "JetBrains Mono", monospace';
+        ctx.fillStyle = idx === 3 ? '#10B981' : '#E2E8F0';
+        ctx.fillText(d.val, 370, dy);
+      });
+
+      // LEFT CARD 2: Intelligent Recovery Strategy
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      roundRect(ctx, 120, 565, leftW, 360, 16);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+      ctx.stroke();
+
+      ctx.font = '800 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#10B981';
+      ctx.fillText('02 // INTELLIGENT RECOVERY STRATEGY SELECTION', 150, 605);
+
+      ctx.font = '700 24px "Inter", sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText('Optimal Action: DELAYED_RETRY (14 Min Delay)', 150, 645);
+
+      // Strategy comparison badges
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
+      roundRect(ctx, 150, 675, 340, 50, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#EF4444';
+      ctx.stroke();
+      ctx.font = '600 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#F87171';
+      ctx.fillText('✖ Immediate Retry: 12% Expected Yield', 170, 706);
+
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+      roundRect(ctx, 510, 675, 380, 50, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#10B981';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#34D399';
+      ctx.fillText('✔ Delayed Retry (14m): 89% Optimal Yield', 530, 706);
+
+      // State machine step indicator
+      ctx.font = '500 14px "Inter", sans-serif';
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillText('Smart PayLink auto-generated as instant SMS/WhatsApp secondary fallback.', 150, 765);
+      ctx.fillText('Idempotent token locked to eliminate potential duplicate charges.', 150, 795);
+
+      // RIGHT CARD: Explainable AI Decision Breakdown
+      const rx = 120 + leftW + 30;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      roundRect(ctx, rx, 175, rightW, 750, 16);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(129, 140, 248, 0.35)';
+      ctx.stroke();
+
+      ctx.font = '800 12px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#818CF8';
+      ctx.fillText('03 // EXPLAINABLE AI REASONING', rx + 30, 215);
+
+      ctx.font = '800 22px "Inter", sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText('Mathematical Decision Trace', rx + 30, 255);
+
+      ctx.font = '500 13px "Inter", sans-serif';
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillText('ReviveAI provides verifiable reasoning, not a black box.', rx + 30, 285);
+
+      // Confidence Meter Bar
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+      roundRect(ctx, rx + 30, 320, rightW - 60, 26, 13);
+      ctx.fill();
+
+      const confProgress = Math.min(rel / 2.0, 1.0) * 0.948;
+      const meterGrad = ctx.createLinearGradient(rx + 30, 0, rx + 30 + (rightW - 60), 0);
+      meterGrad.addColorStop(0, '#06B6D4');
+      meterGrad.addColorStop(1, '#10B981');
+      ctx.fillStyle = meterGrad;
+      roundRect(ctx, rx + 30, 320, (rightW - 60) * confProgress, 26, 13);
+      ctx.fill();
+
+      ctx.font = '700 11px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(`CONFIDENCE: ${(confProgress * 100).toFixed(1)}% HIGH CERTAINTY`, rx + 45, 338);
+
+      // Forensic Metrics Cards
+      const forensicCards = [
+        { label: 'CUSTOMER VALUE (LTV)', val: '₹2,40,000 INR', sub: '16 Past Successful Settlements' },
+        { label: 'FAILURE SIGNATURE', val: 'GATEWAY_TIMEOUT', sub: 'Known transitory bank network surge' },
+        { label: 'RECOMMENDED ACTION', val: 'DELAYED_RETRY', sub: 'Scheduled at optimal 14m window' },
+        { label: 'SAFETY CLEARANCE', val: 'GUARDRAILS PASSED', sub: 'Retry count 1 of 2 max bound' }
+      ];
+
+      forensicCards.forEach((fc, idx) => {
+        const fy = 380 + idx * 95;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+        roundRect(ctx, rx + 30, fy, rightW - 60, 80, 10);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.stroke();
+
+        ctx.font = '700 10px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#64748B';
+        ctx.fillText(fc.label, rx + 45, fy + 24);
+
+        ctx.font = '800 15px "JetBrains Mono", monospace';
+        ctx.fillStyle = idx === 3 ? '#10B981' : '#F1F5F9';
+        ctx.fillText(fc.val, rx + 45, fy + 48);
+
+        ctx.font = '500 12px "Inter", sans-serif';
+        ctx.fillStyle = '#94A3B8';
+        ctx.fillText(fc.sub, rx + 45, fy + 68);
+      });
+
+      // Bottom Banner
+      ctx.font = '800 13px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#38BDF8';
+      ctx.fillText('VERIFIED ON IMMUTABLE FINANCIAL AUDIT LEDGER', rx + 30, 820);
+    }
+
+    // -------------------------------------------------------------
+    // SCENE 4: SMART & SAFE — DETERMINISTIC GUARDRAILS (11.0s – 15.0s)
+    // -------------------------------------------------------------
+    function renderScene4(t) {
+      const rel = t - 11.0; // 0 to 4.0s
+      sceneIndicator.innerText = "SCENE 4: SMART & SAFE";
+
+      ctx.fillStyle = '#050711';
+      ctx.fillRect(0, 0, W, H);
+      renderParticles(t);
+
+      // Center Security Shield
+      ctx.save();
+      ctx.translate(W / 2, 170);
+
+      // Rotating shield rings
+      ctx.rotate(rel * 0.5);
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([8, 12]);
+      ctx.beginPath();
+      ctx.arc(0, 0, 75, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Shield Icon
+      ctx.save();
+      ctx.translate(W / 2 - 32, 170 - 32);
+      ctx.fillStyle = '#10B981';
+      ctx.shadowColor = '#10B981';
+      ctx.shadowBlur = 25;
+      // Shield SVG path
+      ctx.beginPath();
+      ctx.moveTo(32, 4);
+      ctx.lineTo(12, 14);
+      ctx.lineTo(12, 34);
+      ctx.bezierCurveTo(12, 50, 32, 60, 32, 60);
+      ctx.bezierCurveTo(32, 60, 52, 50, 52, 34);
+      ctx.lineTo(52, 14);
+      ctx.closePath();
+      ctx.fill();
+
+      // Checkmark inside shield
+      ctx.strokeStyle = '#050711';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(24, 32);
+      ctx.lineTo(30, 38);
+      ctx.lineTo(40, 26);
+      ctx.stroke();
+      ctx.restore();
+
+      // Titles
+      ctx.textAlign = 'center';
+      ctx.font = '800 13px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#10B981';
+      ctx.fillText('FINANCIAL GOVERNANCE &bull; ZERO HALLUCINATIONS', W / 2, 275);
+
+      ctx.font = '900 48px "Inter", sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText('Smart & Safe: Deterministic Financial Guardrails', W / 2, 335);
+
+      ctx.font = '500 18px "Inter", sans-serif';
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillText('AI proposes recovery actions. Bounded mathematical guardrails enforce safety.', W / 2, 375);
+      ctx.textAlign = 'left';
+
+      // 4 Guardrails Grid (2x2)
+      const guardrails = [
+        {
+          num: '01',
+          title: 'Configurable Retry Limits',
+          rule: 'STRICT CAP ≤ 2 ATTEMPTS',
+          desc: 'Prevents card throttling and preserves merchant brand reputation.',
+          accent: '#38BDF8'
+        },
+        {
+          num: '02',
+          title: 'Human Approval Safeguards',
+          rule: 'THRESHOLD ≥ ₹50,000 INR',
+          desc: 'High-value transactions escalate to operator sign-off in /approvals queue.',
+          accent: '#F59E0B'
+        },
+        {
+          num: '03',
+          title: '24-Hour Recovery Windows',
+          rule: 'MAX BOUND 24 HOURS',
+          desc: 'Prevents delayed banking settlement disputes and chargeback liabilities.',
+          accent: '#818CF8'
+        },
+        {
+          num: '04',
+          title: 'Automatic Termination',
+          rule: 'INSTANT ON SETTLEMENT',
+          desc: 'Workflows terminate immediately upon success. Eliminates double charges.',
+          accent: '#10B981'
+        }
+      ];
+
+      const gridStartX = 240;
+      const cardW = (W - 480 - 30) / 2;
+      const cardH = 200;
+
+      guardrails.forEach((g, idx) => {
+        const col = idx % 2;
+        const row = Math.floor(idx / 2);
+        const gx = gridStartX + col * (cardW + 30);
+        const gy = 430 + row * (cardH + 25);
+
+        // Slide-in animation for each card
+        const cardDelay = idx * 0.45;
+        const cardProgress = Math.min(Math.max((rel - cardDelay) / 0.4, 0), 1.0);
+
+        ctx.save();
+        ctx.globalAlpha = cardProgress;
+        ctx.translate(0, (1 - cardProgress) * 20);
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        roundRect(ctx, gx, gy, cardW, cardH, 16);
+        ctx.fill();
+
+        ctx.strokeStyle = g.accent;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Card Header
+        ctx.font = '800 11px "JetBrains Mono", monospace';
+        ctx.fillStyle = g.accent;
+        ctx.fillText(`GUARDRAIL RULE ${g.num}`, gx + 25, gy + 36);
+
+        ctx.font = '800 22px "Inter", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(g.title, gx + 25, gy + 72);
+
+        // Rule Badge Pill
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        roundRect(ctx, gx + 25, gy + 92, cardW - 50, 36, 8);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.stroke();
+
+        ctx.font = '800 13px "JetBrains Mono", monospace';
+        ctx.fillStyle = g.accent;
+        ctx.fillText(g.rule, gx + 40, gy + 115);
+
+        ctx.font = '500 13px "Inter", sans-serif';
+        ctx.fillStyle = '#94A3B8';
+        ctx.fillText(g.desc, gx + 25, gy + 160);
+
+        ctx.restore();
+      });
+
+      // Bottom Status Indicator
+      ctx.textAlign = 'center';
+      ctx.font = '700 13px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#10B981';
+      ctx.fillText('ALL RECOVERY ACTIONS BOUNDED BY RIGID RECOVERY CONTRACT', W / 2, 920);
+      ctx.textAlign = 'left';
+    }
+
+    // -------------------------------------------------------------
+    // SCENE 5: THE IMPACT & LOGO OUTRO (15.0s – 18.5s)
+    // -------------------------------------------------------------
+    function renderScene5(t) {
+      const rel = t - 15.0; // 0 to 3.5s
+      sceneIndicator.innerText = "SCENE 5: THE IMPACT";
+
+      ctx.fillStyle = '#040711';
+      ctx.fillRect(0, 0, W, H);
+      renderParticles(t);
+
+      // Phase 1: 15.0s - 16.5s -> Payment Recovered Transition & Counter
+      // Phase 2: 16.5s - 18.5s -> Grand Brand Reveal & Tagline
+      if (rel < 1.6) {
+        // Triumphant Recovered Dashboard Card
+        ctx.save();
+        ctx.shadowColor = '#10B981';
+        ctx.shadowBlur = 45;
+
+        ctx.fillStyle = 'rgba(6, 28, 20, 0.95)';
+        roundRect(ctx, 280, 160, W - 560, 520, 20);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = '#10B981';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Settled Badge
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+        roundRect(ctx, 320, 200, 240, 44, 22);
+        ctx.fill();
+        ctx.strokeStyle = '#10B981';
+        ctx.stroke();
+
+        ctx.font = '800 14px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#34D399';
+        ctx.fillText('✔ PAYMENT RECOVERED', 345, 228);
+
+        // Amount
+        ctx.font = '900 52px "Inter", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText('₹42,500.00 SETTLED', 320, 310);
+
+        ctx.font = '600 16px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#A7F3D0';
+        ctx.fillText('Bank UTR: REV-982410294 &bull; Strategy: DELAYED_RETRY &bull; Elapsed: 8.4s', 320, 355);
+
+        // Divider
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+        ctx.beginPath();
+        ctx.moveTo(320, 395);
+        ctx.lineTo(W - 320, 395);
+        ctx.stroke();
+
+        // Macro Metrics Surge
+        const recoveredRoll = Math.floor(rel * 650000 + 42500);
+        ctx.font = '700 13px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#6EE7B7';
+        ctx.fillText('TOTAL MERCHANT REVENUE PROTECTED THIS CYCLE:', 320, 445);
+
+        ctx.font = '900 64px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#10B981';
+        ctx.fillText(`₹18,42,000`, 320, 525);
+
+        ctx.font = '600 18px "Inter", sans-serif';
+        ctx.fillStyle = '#F8FAFC';
+        ctx.fillText('+34.2% Autonomous Recovery Yield &bull; Zero Customer Churn', 320, 575);
+
+        ctx.restore();
+
+        // Impact Banner
+        ctx.textAlign = 'center';
+        ctx.font = '900 56px "Inter", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText('From Failed Payments to Recovered Revenue.', W / 2, 800);
+        ctx.textAlign = 'left';
+
+      } else {
+        // GRAND BRAND REVEAL & TAGLINE
+        const outroRel = rel - 1.6; // 0 to 1.9s
+        const outroScale = Math.min(0.85 + outroRel * 0.1, 1.0);
+        const outroAlpha = Math.min(outroRel / 0.4, 1.0);
+
+        // Ambient radial light beam
+        const outroGlow = ctx.createRadialGradient(W / 2, H / 2 - 80, 20, W / 2, H / 2 - 80, 500);
+        outroGlow.addColorStop(0, 'rgba(6, 182, 212, 0.35)');
+        outroGlow.addColorStop(0.4, 'rgba(16, 185, 129, 0.2)');
+        outroGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = outroGlow;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.save();
+        ctx.translate(W / 2, H / 2 - 90);
+        ctx.scale(outroScale, outroScale);
+        ctx.globalAlpha = outroAlpha;
+
+        // ReviveAI Emblem
+        drawReviveAILogo(0, 0, 220, outroAlpha, true);
+        ctx.restore();
+
+        // Typography
+        ctx.textAlign = 'center';
+
+        // ReviveAI Title
+        ctx.font = '900 84px "Inter", sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = '#06B6D4';
+        ctx.shadowBlur = 45;
+        ctx.fillText('ReviveAI', W / 2, H / 2 + 130);
+
+        // Required Tagline: "Recover More. Lose Less. Powered by AI."
+        ctx.shadowBlur = 25;
+        ctx.font = '800 36px "Inter", sans-serif';
+        const tagGrad = ctx.createLinearGradient(W / 2 - 350, 0, W / 2 + 350, 0);
+        tagGrad.addColorStop(0, '#38BDF8');
+        tagGrad.addColorStop(0.4, '#10B981');
+        tagGrad.addColorStop(0.7, '#818CF8');
+        tagGrad.addColorStop(1, '#34D399');
+        ctx.fillStyle = tagGrad;
+        ctx.fillText('Recover More. Lose Less. Powered by AI.', W / 2, H / 2 + 195);
+
+        // Web Address / Live CTA
+        ctx.shadowBlur = 0;
+        ctx.font = '600 16px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#94A3B8';
+        ctx.fillText('reviveai-zeta.vercel.app', W / 2, H / 2 + 250);
+
+        ctx.textAlign = 'left';
+      }
+    }
+
+    // -------------------------------------------------------------
+    // MAIN RENDER DISPATCHER
+    // -------------------------------------------------------------
+    function renderFrame(t) {
+      ctx.clearRect(0, 0, W, H);
+
+      if (t < 3.0) {
+        renderScene1(t);
+      } else if (t < 6.0) {
+        renderScene2(t);
+      } else if (t < 11.0) {
+        renderScene3(t);
+      } else if (t < 15.0) {
+        renderScene4(t);
+      } else {
+        renderScene5(t);
+      }
+
+      // Update Scene Tabs
+      sceneChips.forEach(chip => {
+        const chipTime = parseFloat(chip.dataset.time);
+        let isActive = false;
+        if (chipTime === 0 && t < 3) isActive = true;
+        if (chipTime === 3 && t >= 3 && t < 6) isActive = true;
+        if (chipTime === 6 && t >= 6 && t < 11) isActive = true;
+        if (chipTime === 11 && t >= 11 && t < 15) isActive = true;
+        if (chipTime === 15 && t >= 15) isActive = true;
+        chip.classList.toggle('active', isActive);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // ANIMATION & PLAYBACK LOOP
+    // -------------------------------------------------------------
+    function update(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const delta = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      if (isPlaying) {
+        currentTime += delta;
+        if (currentTime >= TOTAL_DURATION) {
+          currentTime = TOTAL_DURATION;
+          pauseVideo();
+        }
+        triggerAudioEvents(currentTime);
+      }
+
+      // Update UI elements
+      const progressPercent = (currentTime / TOTAL_DURATION) * 100;
+      timelineFill.style.width = `${progressPercent}%`;
+      scrubberHandle.style.left = `${progressPercent}%`;
+
+      const mins = Math.floor(currentTime / 60);
+      const secs = (currentTime % 60).toFixed(2).padStart(5, '0');
+      timeCurrent.innerText = `0${mins}:${secs}`;
+
+      renderFrame(currentTime);
+
+      if (isPlaying || currentTime < TOTAL_DURATION) {
+        requestAnimationFrame(update);
+      }
+    }
+
+    function playVideo() {
+      initAudio();
+      isPlaying = true;
+      lastTimestamp = performance.now();
+      bigPlayBtn.style.display = 'none';
+      playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+      playBtnText.innerText = 'Pause';
+      requestAnimationFrame(update);
+    }
+
+    function pauseVideo() {
+      isPlaying = false;
+      bigPlayBtn.style.display = 'flex';
+      playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+      playBtnText.innerText = 'Play';
+    }
+
+    function seekTo(timeSec) {
+      currentTime = Math.max(0, Math.min(timeSec, TOTAL_DURATION));
+      resetAudioEventsAfter(currentTime);
+      renderFrame(currentTime);
+
+      const progressPercent = (currentTime / TOTAL_DURATION) * 100;
+      timelineFill.style.width = `${progressPercent}%`;
+      scrubberHandle.style.left = `${progressPercent}%`;
+
+      const mins = Math.floor(currentTime / 60);
+      const secs = (currentTime % 60).toFixed(2).padStart(5, '0');
+      timeCurrent.innerText = `0${mins}:${secs}`;
+    }
+
+    // -------------------------------------------------------------
+    // EVENT LISTENERS
+    // -------------------------------------------------------------
+    playPauseBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        pauseVideo();
+      } else {
+        if (currentTime >= TOTAL_DURATION) seekTo(0);
+        playVideo();
+      }
+    });
+
+    bigPlayBtn.addEventListener('click', () => {
+      if (currentTime >= TOTAL_DURATION) seekTo(0);
+      playVideo();
+    });
+
+    videoWrapper.addEventListener('click', (e) => {
+      if (e.target !== bigPlayBtn && !bigPlayBtn.contains(e.target)) {
+        if (isPlaying) pauseVideo();
+        else {
+          if (currentTime >= TOTAL_DURATION) seekTo(0);
+          playVideo();
+        }
+      }
+    });
+
+    restartBtn.addEventListener('click', () => {
+      seekTo(0);
+      playVideo();
+    });
+
+    timelineWrap.addEventListener('click', (e) => {
+      const rect = timelineWrap.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(clickX / rect.width, 1));
+      seekTo(ratio * TOTAL_DURATION);
+    });
+
+    sceneChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const targetTime = parseFloat(chip.dataset.time);
+        seekTo(targetTime);
+        if (!isPlaying) playVideo();
+      });
+    });
+
+    muteBtn.addEventListener('click', () => {
+      audioMuted = !audioMuted;
+      muteBtnLabel.innerText = audioMuted ? 'Sound: MUTED' : 'Sound: ON';
+      muteBtn.classList.toggle('active', !audioMuted);
+      hudAudioStatus.style.opacity = audioMuted ? '0.4' : '1.0';
+    });
+
+    fsBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        videoWrapper.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    downloadMp4Btn.addEventListener('click', () => {
+      // Direct link to the generated MP4 in project
+      window.open('reviveai_product_launch.mp4', '_blank');
+    });
+
+    // Auto-initialize first frame
+    renderFrame(0);
+  </script>
+</body>
+</html>

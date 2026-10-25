@@ -92,12 +92,13 @@ For high-throughput persistent production instances, you can decouple frontend o
 
 ## 🌟 Option 2: 1-Click Render Blueprint (`render.yaml`)
 
-This repository includes a `render.yaml` blueprint that launches both the FastAPI backend and the static frontend in one click.
+This repository includes an enterprise-grade `render.yaml` blueprint that launches both the FastAPI backend and the static frontend in one click.
 
 1. Push your code to GitHub.
 2. In Render, click **Blueprints** $\to$ **New Blueprint Instance**.
 3. Select your repository.
 4. Render will automatically read `render.yaml`, configure the backend and frontend services, wire the internal API URLs, and deploy both services simultaneously.
+5. **Media & Launch Video Streaming**: `render.yaml` is pre-configured with `Accept-Ranges: bytes` and long-term immutable caching for `/reviveai_product_launch.mp4` as well as SPA rewrites for the `/launch-video` route and static pass-through for `/launch_video.html`.
 
 ---
 
