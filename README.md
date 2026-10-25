@@ -4,7 +4,8 @@
 
 # ⚡ ReviveAI — Autonomous AI Revenue Recovery Platform
 
-[![CI Pipeline](https://github.com/reviveai/reviveai/actions/workflows/ci.yml/badge.svg)](https://github.com/reviveai/reviveai/actions)
+[![CI Pipeline](https://github.com/MANOJHEGDE77/reviveai/actions/workflows/ci.yml/badge.svg)](https://github.com/MANOJHEGDE77/reviveai/actions)
+[![Live Deployment](https://img.shields.io/badge/Vercel-Live_Deployment-black?logo=vercel&logoColor=white)](https://reviveai-rcptftndp-kannimmhegde123-5360s-projects.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.12%20%7C%203.13-3776AB.svg?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
@@ -12,6 +13,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC.svg?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](docker-compose.yml)
+
+🌐 **Live Vercel Deployment**: [https://reviveai-rcptftndp-kannimmhegde123-5360s-projects.vercel.app](https://reviveai-rcptftndp-kannimmhegde123-5360s-projects.vercel.app)
 
 **ReviveAI** is a production-grade autonomous revenue recovery system for merchants. It transforms passive payment monitoring into an active financial intelligence engine by implementing a closed-loop agentic lifecycle:
 
