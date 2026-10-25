@@ -10,8 +10,16 @@ if str(backend_dir) not in sys.path:
 # Ensure VERCEL flag is set so config uses /tmp writable database
 os.environ["VERCEL"] = "1"
 
-from app.main import app
+from app.main import app as _fastapi_app
 
-# Export for Vercel Serverless Function runtime
-# Vercel's Python runtime natively wraps ASGI FastAPI apps
-app = app
+# Robust ASGI wrapper for Vercel serverless execution
+async def app(scope, receive, send):
+    if scope["type"] == "http":
+        path = scope.get("path", "")
+        if path.startswith("/api/index.py"):
+            rest = path[len("/api/index.py"):]
+            scope["path"] = f"/api{rest}" if rest.startswith("/") else ("/api" + ("/" + rest if rest else ""))
+        elif not path.startswith("/api"):
+            scope["path"] = f"/api{path}"
+    await _fastapi_app(scope, receive, send)
+

@@ -54,6 +54,7 @@ async def correlation_id_middleware(request: Request, call_next):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -70,6 +71,7 @@ app.include_router(audit.router, prefix="/api")
 app.include_router(simulation.router, prefix="/api")
 
 @app.get("/api/health")
+@app.get("/health")
 def health_check():
     # Database ping
     db_healthy = False
