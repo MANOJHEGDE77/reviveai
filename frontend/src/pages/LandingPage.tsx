@@ -37,15 +37,13 @@ import {
 import { apiClient, formatINR, formatDateTime } from '../api/client';
 import { DashboardSummary, Payment, ApprovalRequest, AuditLog, DemoScenarioResult } from '../types';
 import { BrandLogo } from '../components/BrandLogo';
-import { LaunchVideoModal } from '../components/LaunchVideoModal';
 import { ThreeCanvasHero } from '../components/ThreeCanvasHero';
 import { ThreePaymentGlobe } from '../components/ThreePaymentGlobe';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
-  // 0. Launch Video & 3D Hero Mode State
-  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  // 0. 3D Hero Mode State
   const [heroViewMode, setHeroViewMode] = useState<'3d' | 'console'>('3d');
 
   // 1. Data States
@@ -316,18 +314,13 @@ export const LandingPage: React.FC = () => {
 
         {/* Header Actions */}
         <div className="flex items-center gap-2.5">
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-400 font-mono text-[10px] font-bold">
-            <Sparkles className="w-3 h-3 text-cyan-400" />
-            <span>3D WebGL Live</span>
-          </span>
-
-          <button
-            onClick={() => setVideoModalOpen(true)}
-            className="px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-[#111216] bg-white border border-[#DCD8CF] hover:border-[#111216] hover:bg-[#F4F1E9] transition flex items-center gap-1.5 shadow-xs"
+          <a
+            href="#spatial-3d-topology"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-950/30 border border-cyan-500/30 text-cyan-400 font-mono text-[11px] font-bold hover:bg-cyan-900/40 transition"
           >
-            <Play className="w-3 h-3 text-[#168F5A] fill-[#168F5A]" />
-            <span>Launch Video</span>
-          </button>
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>3D Spatial Topology</span>
+          </a>
 
           <button
             onClick={() => navigate('/journey')}
@@ -390,11 +383,15 @@ export const LandingPage: React.FC = () => {
             {/* CTAs */}
             <div className="flex flex-wrap items-center gap-3 pt-4 font-mono text-xs">
               <button
-                onClick={() => setVideoModalOpen(true)}
+                onClick={() => {
+                  setHeroViewMode('3d');
+                  const el = document.getElementById('spatial-3d-topology');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="px-5 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-[#06B6D4] to-[#10B981] hover:from-[#0891B2] hover:to-[#059669] transition flex items-center gap-2 shadow-md shadow-cyan-500/20"
               >
-                <Play className="w-3.5 h-3.5 fill-white" />
-                <span>Watch Launch Film (18.5s)</span>
+                <Sparkles className="w-3.5 h-3.5 text-white" />
+                <span>Explore 3D Architecture</span>
               </button>
 
               <button
@@ -402,7 +399,7 @@ export const LandingPage: React.FC = () => {
                 className="px-5 py-3 rounded-xl font-semibold text-[#111216] bg-white hover:bg-[#EDE9E0] border border-[#DCD8CF] transition flex items-center gap-2 shadow-xs"
               >
                 <Zap className="w-3.5 h-3.5 text-[#168F5A]" />
-                <span>Open live console</span>
+                <span>Launch Command Center</span>
               </button>
 
               <a
@@ -478,9 +475,10 @@ export const LandingPage: React.FC = () => {
                 </button>
               </div>
 
-              <span className="text-[11px] font-mono text-[#666A6B] hidden sm:inline">
-                Three.js WebGL &bull; 60 FPS
-              </span>
+              <div className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-600 font-medium hidden sm:flex">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Live Interactive Telemetry</span>
+              </div>
             </div>
 
             {heroViewMode === '3d' ? (
@@ -722,7 +720,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 2.5 Dedicated 3D Sovereign Financial Topology & Global Payment Mesh */}
-      <section className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[#DCD8CF]">
+      <section id="spatial-3d-topology" className="max-w-7xl mx-auto px-6 sm:px-12 py-16 border-t border-[#DCD8CF]">
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 pb-8 border-b border-[#DCD8CF]">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF5EE] border border-[#B9E2CD] text-[11px] font-mono font-bold text-[#168F5A] uppercase">
@@ -1566,26 +1564,17 @@ export const LandingPage: React.FC = () => {
 
           <div className="flex items-center gap-6 text-[11px]">
             <a href="#product" className="hover:text-[#111216]">Product</a>
+            <a href="#spatial-3d-topology" className="hover:text-[#111216]">3D Topology</a>
             <a href="#how-it-works" className="hover:text-[#111216]">How it works</a>
-            <button onClick={() => setVideoModalOpen(true)} className="hover:text-[#111216] flex items-center gap-1">
-              <Play className="w-2.5 h-2.5 fill-current text-[#168F5A]" />
-              <span>Launch Film</span>
-            </button>
             <button onClick={() => navigate('/audit')} className="hover:text-[#111216]">Audit Ledger</button>
             <button onClick={() => navigate('/approvals')} className="hover:text-[#111216]">Approvals</button>
           </div>
 
           <div className="text-[11px] text-[#888B8C]">
-            &copy; {new Date().getFullYear()} ReviveAI &bull; MIT License
+            &copy; {new Date().getFullYear()} ReviveAI Inc. All rights reserved.
           </div>
         </div>
       </footer>
-
-      {/* 7. Product Launch Video Modal */}
-      <LaunchVideoModal
-        isOpen={videoModalOpen}
-        onClose={() => setVideoModalOpen(false)}
-      />
     </div>
   );
 };
